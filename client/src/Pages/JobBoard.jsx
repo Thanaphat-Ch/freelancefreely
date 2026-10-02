@@ -4,6 +4,7 @@ import api from "../api/axios"
 import { JobCard } from "../Components/Card"
 import Input from "../Components/Input"
 import Swal from "sweetalert2"
+import { Footer } from "../Components/footer"
 
 const HeroSection = ({ selectedType, setSelectedType, selectedCategory, setSelectedCategory, onSearch, }) => (
   <div className="bg-slate-950 text-white py-16 sm:py-20 border-b border-slate-900">
@@ -265,6 +266,7 @@ const App = () => {
           </div>
         )}
       </main>
+      <Footer />
     </div>
   )
 }
