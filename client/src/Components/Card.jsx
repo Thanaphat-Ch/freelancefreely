@@ -9,7 +9,6 @@ import { useStartChat } from "../hooks/useStartChat"
 
 
 export const JobCard = ({ job }) => {
-
   const formatDate = (dateString) => {
     if (!dateString) return "-"
     return new Date(dateString).toLocaleDateString("th-TH", {
@@ -19,78 +18,71 @@ export const JobCard = ({ job }) => {
     })
   }
 
-  const getStatusBadge = (status) => {
-    const styles = {
-      in_progress: "bg-amber-100 text-amber-700 border-amber-200",
-      completed: "bg-emerald-100 text-emerald-700 border-emerald-200",
-      open: "bg-blue-50 text-blue-600 border-blue-100",
-      offer: "bg-purple-50 text-purple-600 border-purple-100",
-      rejected: "bg-red-50 text-red-600 border-red-100",
+  // ปรับ Status จากป้าย (Pill) ก้อนใหญ่ๆ เป็นจุดสี (Dot) มินิมอลเรียบหรู
+  const getStatusDisplay = (status) => {
+    const config = {
+      in_progress: { color: "bg-amber-400", text: "กำลังทำ" },
+      completed: { color: "bg-emerald-500", text: "เสร็จสิ้น" },
+      open: { color: "bg-indigo-500", text: "รับสมัคร" },
+      offer: { color: "bg-purple-500", text: "ข้อเสนอ" },
+      rejected: { color: "bg-red-500", text: "ปฏิเสธ" },
     }
-    const labels = {
-      in_progress: "กำลังทำ",
-      completed: "เสร็จสิ้น",
-      open: "รับสมัคร",
-      offer: "ข้อเสนอ",
-      rejected: "ปฏิเสธ",
-    }
-    const currentStatus = status || "open"
+    const current = config[status || "open"]
 
-    return <span className={`px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-[10px] sm:text-xs font-bold border whitespace-nowrap ${styles[currentStatus] || "bg-gray-100 text-gray-600"}`}>{labels[currentStatus] || currentStatus}</span>
+    return (
+      <div className="flex items-center gap-1.5 text-xs font-medium text-slate-600">
+        <span className={`w-1.5 h-1.5 rounded-full ${current.color}`} />
+        {current.text}
+      </div>
+    )
   }
 
   return (
-    <Link to={`/job/${job._id}`} className="block h-full group">
-      <div className="bg-white rounded-xl sm:rounded-2xl border border-gray-200 p-4 sm:p-5 hover:shadow-xl hover:border-indigo-200 transition-all duration-300 cursor-pointer flex flex-col h-full relative overflow-hidden">
-        {/* Header: Date & Status */}
-        <div className="flex justify-between items-center mb-2 sm:mb-3">
-          <div className="flex items-center gap-1 text-slate-400 text-[10px] sm:text-xs font-medium bg-slate-50 px-1.5 py-0.5 rounded-md">
-            <Calendar size={12} className="sm:w-3.5 sm:h-3.5" />
-            <span className="truncate">เมื่อ: {formatDate(job.createdAt)}</span>
-          </div>
-          <div className="ml-2">{getStatusBadge(job.status)}</div>
-        </div>
-
-        {/* Title & Description */}
-        <div className="mb-3 sm:mb-4">
-          <h3 className="text-base sm:text-lg font-bold text-slate-800 group-hover:text-indigo-600 transition-colors line-clamp-2 leading-tight mb-1">{job.title}</h3>
-          <p className="text-slate-500 text-xs sm:text-sm line-clamp-2 h-8 sm:h-10 overflow-hidden">{job.description || "ไม่มีรายละเอียดเพิ่มเติม"}</p>
-        </div>
-
-        {/* Tags Row: Category & Type */}
-        <div className="flex flex-wrap gap-2 mb-3 sm:mb-4">
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-indigo-50 text-indigo-700 text-[10px] sm:text-xs font-semibold">
-            <Briefcase size={12} className="sm:w-3.5 sm:h-3.5" />
-            <span className="truncate max-w-[100px] sm:max-w-none">{job.category}</span>
-          </span>
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-cyan-50 text-cyan-700 text-[10px] sm:text-xs font-semibold capitalize">
-            <Clock size={12} className="sm:w-3.5 sm:h-3.5" />
-            {job.type}
+    <Link to={`/job/${job._id}`} className="group block h-full">
+      <div className="h-full flex flex-col bg-white border border-slate-200/80 rounded-2xl p-5 sm:p-6 transition-all duration-300 hover:border-slate-400 hover:shadow-[0_4px_20px_rgba(0,0,0,0.04)] relative">
+        
+        {/* Header: Status & Date */}
+        <div className="flex justify-between items-center mb-4">
+          {getStatusDisplay(job.status)}
+          <span className="text-[11px] text-slate-400 font-medium">
+            ประกาศเมื่อ {formatDate(job.createdAt)}
           </span>
         </div>
 
-        {/* Divider (Dotted line ดูเบากว่า) */}
-        <div className="border-t border-dashed border-gray-200 mt-auto mb-3 sm:mb-4"></div>
+        {/* Content: Title & Description */}
+        <div className="mb-4 flex-1">
+          <h3 className="text-base sm:text-lg font-bold text-slate-900 group-hover:text-indigo-600 transition-colors line-clamp-2 leading-snug mb-2">
+            {job.title}
+          </h3>
+          <p className="text-xs sm:text-sm text-slate-500 line-clamp-2 leading-relaxed">
+            {job.description || "ไม่มีรายละเอียดเพิ่มเติม"}
+          </p>
+        </div>
+
+        {/* Tags: แปลงจากกล่องสี เป็นตัวหนังสือคั่นด้วยจุด (Typographic Tags) */}
+        <div className="flex flex-wrap items-center gap-1.5 text-xs font-medium mb-5">
+          <span className="text-slate-700 bg-slate-50 px-2 py-1 rounded-md border border-slate-100">{job.category || "ไม่ระบุหมวดหมู่"}</span>
+          <span className="text-slate-400">•</span>
+          <span className="text-slate-500">{job.type || "ไม่ระบุลักษณะงาน"}</span>
+        </div>
 
         {/* Footer: Deadline & Price */}
-        <div className="flex items-end justify-between gap-2">
-          {/* Left: Deadline */}
-          <div className="flex flex-col">
-            <span className="text-[10px] uppercase text-slate-400 font-bold tracking-wider">ปิดรับ</span>
-            <span className="text-xs sm:text-sm font-medium text-slate-600">{formatDate(job.endPost)}</span>
+        <div className="flex items-end justify-between pt-4 border-t border-slate-100 mt-auto">
+          <div>
+            <p className="text-[11px] text-slate-400 font-medium mb-0.5">รับสมัครถึง</p>
+            <p className="text-xs sm:text-sm font-semibold text-slate-700">
+              {formatDate(job.endPost)}
+            </p>
           </div>
-
-          {/* Right: Price */}
-          <div className="text-right shrink-0">
-            <div className="flex items-center justify-end gap-0.5 text-emerald-600 font-bold text-base sm:text-lg">
-              {/* <DollarSign size={16} strokeWidth={2.5} className="sm:w-[18px] sm:h-[18px]" /> */}
-             
-              <span className="">฿</span>
-              {formatMoney(job.rate)}
+          
+          <div className="text-right">
+            <p className="text-[11px] text-slate-400 font-medium mb-0.5">งบประมาณ</p>
+            <div className="text-base sm:text-lg font-bold text-indigo-600">
+              ฿{job.rate ? Number(job.rate).toLocaleString() : "0"}
             </div>
-            <span className="text-[10px] text-slate-400 block -mt-1">บาท</span>
           </div>
         </div>
+
       </div>
     </Link>
   )
@@ -98,136 +90,202 @@ export const JobCard = ({ job }) => {
 
 export const FreelancerCard = ({ freelancer, isOwner = false, onEdit, onRefresh }) => {
   const navigate = useNavigate()
-  // const [rating, setRating] = useState(freelancer.rating || 0)
-  const [isActive, setIsActive] = useState(freelancer.isActive)
+  const [isActive, setIsActive] = useState(freelancer?.isActive ?? true)
 
-  // useEffect(() => {
-  //   const fetchstat = async () => {
-  //     try {
-  //       const res = await api.get(`/reviews/${freelancer.user}/rating`)
-  //       setRating(res.data.avgRating || null)
-  //     } catch (err) {
-  //       console.error("Failed to fetch jobs", err)
-  //     }
-  // } 
-  //   fetchstat()
-  // }, [freelancer.user])
-  
   const handleDelete = async (e) => {
-    e.stopPropagation(); // ไม่ให้กดทะลุไปหน้ารายละเอียด
-    // if (!window.confirm(" รูปภาพทั้งหมดจะถูกลบด้วย")) return;
-    if (!(await Swal.fire({ title:"คุณแน่ใจหรือไม่ที่จะลบงานนี้?", text: "รูปภาพทั้งหมดจะถูกลบด้วย", icon: "question", showCancelButton:true, confirmButtonText: "ยืนยัน", cancelButtonText: "ยกเลิก"})).isConfirmed) return
-    
+    e.stopPropagation()
+    const confirmResult = await Swal.fire({
+      title: "คุณแน่ใจหรือไม่ที่จะลบงานนี้?",
+      text: "ข้อมูลและรูปภาพทั้งหมดจะถูกลบออก",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "ลบงาน",
+      cancelButtonText: "ยกเลิก",
+      confirmButtonColor: "#EF4444",
+      cancelButtonColor: "#64748B"
+    })
+
+    if (!confirmResult.isConfirmed) return
+
     try {
-        await api.delete(`/freelancers/${freelancer._id}`);
-        onRefresh && onRefresh(); // รีโหลดหน้า
+      await api.delete(`/freelancers/${freelancer._id}`)
+      onRefresh && onRefresh()
     } catch (err) {
-        Swal.fire("เกิดข้อผิดพลาด!", "ลบไม่สำเร็จ", "error")
+      Swal.fire("เกิดข้อผิดพลาด!", "ไม่สามารถลบงานได้ในขณะนี้", "error")
     }
   }
 
   const handleToggleStatus = async (e) => {
-    e.stopPropagation();
+    e.stopPropagation()
     try {
-        const res = await api.patch(`/freelancers/${freelancer._id}/status`);
-        setIsActive(res.data.isActive);
+      const res = await api.patch(`/freelancers/${freelancer._id}/status`)
+      setIsActive(res.data.isActive)
     } catch (err) {
-        console.error("Toggle failed", err);
+      console.error("Toggle failed", err)
     }
   }
 
   return (
     <div
       onClick={() => navigate(`/detailfreelancer/${freelancer._id}`)}
-      className="
-        group relative flex flex-col h-full
-        bg-white rounded-2xl overflow-hidden
-        border border-slate-100
-        transition-all duration-300 ease-in-out
-        hover:-translate-y-1 hover:shadow-xl hover:shadow-indigo-100/50
-        cursor-pointer
-      "
+      className="group relative flex flex-col h-full bg-white rounded-2xl overflow-hidden border border-slate-200/80 hover:border-indigo-300 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-xl hover:shadow-indigo-500/10 transition-all duration-300 ease-out cursor-pointer"
     >
-      {isOwner && (
-          <div className={`absolute top-2 left-2 z-10 px-2 py-0.5 rounded-md text-[10px] font-bold text-white shadow-sm ${isActive ? 'bg-green-500' : 'bg-gray-500'}`}>
-              {isActive ? 'เปิดรับงาน' : 'ปิดรับงาน'}
-          </div>
-      )}
-      <div className="relative h-48 overflow-hidden bg-gray-100">
-        <img src={freelancer?.banners?.[0]?.url || "/src/assets/image/default-banner.png"} alt={freelancer?.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-        <div className="absolute inset-0 bg-linear-to-t from-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-      </div>
-      <div className={`flex flex-col flex-1 p-5 ${isOwner ? 'pb-16' : ''}`}>
-        <div className={`${isOwner ? 'mb-2' : 'mb-4'}`}>
-          <div className="flex justify-between items-start gap-2 mb-2">
-            {/* <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded-lg border border-yellow-100">
-              <Star size={12} className="text-yellow-500 fill-yellow-500" />
-              <span className="text-xs font-bold text-slate-700">{rating || "0.0"}</span>
-            </div> */}
-          </div>
-
-          <h3
-            className="
-                    text-sm font-semibold text-slate-800 leading-snug
-                    line-clamp-2         /* ตัดคำเมื่อเกิน 2 บรรทัด */
-                    min-h-11  
-                    group-hover:text-indigo-600 transition-colors
-                "
-            title={freelancer.title} 
+      {/* สถานะเปิด/ปิดรับงาน (สำหรับ Owner) หรือ Badge ประเภทบริการ */}
+      <div className="absolute top-3 left-3 z-10 flex items-center gap-1.5 pointer-events-none">
+        {isOwner ? (
+          <span
+            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold tracking-wide backdrop-blur-md shadow-sm ${
+              isActive
+                ? "bg-emerald-500/90 text-white"
+                : "bg-slate-700/90 text-slate-200"
+            }`}
           >
-            {freelancer.title || "บริการที่คุณอาจสนใจ"}
-          </h3>
-        </div>
+            <span className={`w-1.5 h-1.5 rounded-full ${isActive ? "bg-white animate-pulse" : "bg-slate-400"}`} />
+            {isActive ? "เปิดรับงาน" : "ปิดรับงาน"}
+          </span>
+        ) : (
+          freelancer?.category && (
+            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-medium bg-slate-900/70 backdrop-blur-md text-white border border-white/10 shadow-xs">
+              {freelancer.category}
+            </span>
+          )
+        )}
+      </div>
 
-        <div className="mt-auto pt-4 border-t border-slate-100">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex-1 min-w-0">
-              {" "}
-              <div className="truncate">
-                <ProfileCard userId={freelancer.user} />
-              </div>
-            </div>
-            <div className="text-right shrink-0">
-              <p className="text-[8px] text-slate-400 font-medium">เริ่มต้น</p>
-              <p className="text-indigo-600 font-medium text-sm leading-none">{freelancer.rate ? `฿${formatPrice(freelancer.rate)}` : "-"}</p>
+      {/* Banner รูปภาพปกบริการ */}
+      <div className="relative aspect-16/10 w-full overflow-hidden bg-slate-100">
+        <img
+          src={freelancer?.banners?.[0]?.url || "/src/assets/image/default-banner.png"}
+          alt={freelancer?.title || "service banner"}
+          className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+        />
+        <div className="absolute inset-0 bg-linear-to-t from-slate-950/40 via-transparent to-transparent opacity-40 group-hover:opacity-20 transition-opacity" />
+      </div>
+
+      {/* รายละเอียดบริการ */}
+      <div className={`flex flex-col flex-1 p-4 sm:p-5 ${isOwner ? "pb-16" : ""}`}>
+        {/* หัวข้อบริการ (Service Title) */}
+        <h3
+          className="text-sm sm:text-base font-semibold text-slate-800 leading-snug line-clamp-2 min-h-11 group-hover:text-indigo-600 transition-colors"
+          title={freelancer?.title}
+        >
+          {freelancer?.title || "บริการงานด้านเทคโนโลยีและซอฟต์แวร์"}
+        </h3>
+
+        {/* ผู้ให้บริการ & ราคาเริ่มต้น */}
+        <div className="mt-auto pt-3.5 border-t border-slate-100 flex items-center justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <ProfileCard userId={freelancer?.user} />
+          </div>
+
+          <div className="text-right shrink-0">
+            <span className="block text-[10px] text-slate-400 font-medium uppercase tracking-wider">
+              ราคาเริ่มต้น
+            </span>
+            <div className="text-indigo-600 font-bold text-base leading-tight">
+              {freelancer?.rate ? (
+                <>
+                  <span className="text-xs font-semibold mr-0.5">฿</span>
+                  {formatPrice(freelancer.rate)}
+                </>
+              ) : (
+                <span className="text-slate-400 text-sm font-normal">ตามตกลง</span>
+              )}
             </div>
           </div>
         </div>
       </div>
 
+      {/* Action Bar สำหรับเจ้าของงาน (Owner Control) */}
       {isOwner && (
-        <div 
-            className="absolute bottom-0 left-0 right-0 bg-white border-t border-slate-100 p-2 flex justify-between items-center z-20"
-            onClick={(e) => e.stopPropagation()} // กดตรงนี้ไม่ไปหน้า detail
+        <div
+          className="absolute bottom-0 left-0 right-0 bg-slate-50/95 backdrop-blur-md border-t border-slate-200/80 px-3.5 py-2 flex justify-between items-center z-20"
+          onClick={(e) => e.stopPropagation()}
         >
-            {/* Toggle Switch แบบปุ่มกดง่ายๆ */}
-            <button 
-                onClick={handleToggleStatus}
-                className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${isActive ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
-            >
-                {isActive ? <Eye size={14}/> : <EyeOff size={14}/>}
-                {isActive ? "แสดงอยู่" : "ซ่อน"}
-            </button>
+          <button
+            type="button"
+            onClick={handleToggleStatus}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+              isActive
+                ? "bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-50"
+                : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-100"
+            }`}
+          >
+            {isActive ? <Eye size={13} className="text-emerald-600" /> : <EyeOff size={13} />}
+            <span>{isActive ? "แสดงงานอยู่" : "ซ่อนงานนี้"}</span>
+          </button>
 
-            <div className="flex gap-1">
-                <button 
-                    onClick={(e) => { e.stopPropagation(); onEdit(); }} 
-                    className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
-                    title="แก้ไข"
-                >
-                    <Edit size={16} />
-                </button>
-                <button 
-                    onClick={handleDelete}
-                    className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                    title="ลบ"
-                >
-                    <Trash2 size={16} />
-                </button>
-            </div>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                onEdit && onEdit()
+              }}
+              className="p-1.5 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+              title="แก้ไขรายละเอียดงาน"
+            >
+              <Edit size={15} />
+            </button>
+            <button
+              type="button"
+              onClick={handleDelete}
+              className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+              title="ลบงานนี้"
+            >
+              <Trash2 size={15} />
+            </button>
+          </div>
         </div>
       )}
     </div>
+  )
+}
+
+export const ProfileCard = ({ userId }) => {
+  const [profileData, setProfileData] = useState({})
+
+  useEffect(() => {
+    let isMounted = true
+    const fetchProfile = async () => {
+      try {
+        const res = await api.get(`/users/${userId}`)
+        if (isMounted) setProfileData(res.data || {})
+      } catch (err) {
+        console.error("Failed to fetch user profile", err)
+      }
+    }
+    if (userId) fetchProfile()
+    return () => {
+      isMounted = false
+    }
+  }, [userId])
+
+  return (
+    <Link
+      to={`/profile/${profileData._id || userId}`}
+      onClick={(e) => e.stopPropagation()}
+      className="inline-flex items-center gap-2 max-w-full group/profile hover:opacity-85 transition-opacity"
+    >
+      <div className="w-7 h-7 rounded-full bg-linear-to-tr from-indigo-600 to-sky-400 p-px shrink-0">
+        <div className="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden">
+          {profileData.profilePicture ? (
+            <img
+              src={profileData.profilePicture}
+              alt={profileData.name || "profile"}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <span className="text-indigo-600 text-xs font-bold">
+              {profileData.name ? profileData.name.charAt(0).toUpperCase() : <User size={13} />}
+            </span>
+          )}
+        </div>
+      </div>
+      <span className="text-xs font-medium text-slate-600 group-hover/profile:text-indigo-600 truncate">
+        {profileData.name || "ฟรีแลนซ์"}
+      </span>
+    </Link>
   )
 }
 
@@ -255,34 +313,6 @@ export const ReviewCard = ({ review }) => {
   )
 }
 
-export const ProfileCard = ({ userId }) => {
-  const [profileData, setProfileData] = useState({})
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const res = await api.get(`/users/${userId}`)
-        setProfileData(res.data)
-      } catch (err) {
-        console.error("Failed to fetch jobs", err)
-      }
-    }
-    fetchProfile()
-  }, [userId])
-
-  return (
-    <Link to={`/profile/${profileData._id}`} className="rounded-xl">
-      <div className="flex items-center gap-2 ">
-         <div className="w-8 h-8 rounded-full bg-indigo-500 from-indigo-500 to-cyan-500 flex items-center justify-center text-white text-sm font-bold">
-            {profileData.profilePicture ? <img src={profileData.profilePicture} alt="profile" className="w-full h-full rounded-full object-cover" /> : profileData.name?.[0]}
-        </div>
-        <div>
-          <h4 className="text-slate-700">{profileData.name || "undefind"}</h4>
-        </div>
-      </div>
-    </Link>
-  )
-}
 
 export const SectionCard = ({ title, icon: Icon, children, tab = [], className = "", overflow }) => {
   const [activeTab, setActiveTab] = useState(tab[0]?.key)

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { DollarSign, MessageCircle, Heart, Circle ,Trash2 } from "lucide-react"
+import { DollarSign, MessageCircle, Heart, Circle, Trash2, X } from "lucide-react"
 import { Link, useNavigate, useParams } from "react-router-dom"
 import api from "../api/axios"
 import BackButton from "../Components/BackButton"
@@ -17,22 +17,18 @@ const ApplyModal = ({ jobId, onClose, onSuccess }) => {
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value })
-    if (errors[e.target.name]) {
-      setErrors({ ...errors, [e.target.name]: null })
-    }
+    if (errors[e.target.name]) setErrors({ ...errors, [e.target.name]: null })
   }
+  
   const validate = () => {
     const newErrors = {}
-    if (!form.message.trim()) {
-      newErrors.message = "กรุณาแนะนำตัวหรือแนวทางการทำงาน"
-    }
+    if (!form.message.trim()) newErrors.message = "กรุณาแนะนำตัวหรือเสนอแนวทางการทำงาน"
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
 
   const submit = async () => {
     if (!validate()) return
-
     try {
       setLoading(true)
       await api.post(`/jobs/${jobId}/apply`, form)
@@ -40,25 +36,32 @@ const ApplyModal = ({ jobId, onClose, onSuccess }) => {
       onClose()
     } catch (err) {
       console.error(err)
-      Swal.fire("เกิดข้อผิดพลาด!", "เกิดข้อผิดพลาดในการส่งข้อเสนอ", "error")
+      Swal.fire("เกิดข้อผิดพลาด!", "ไม่สามารถส่งข้อเสนอได้ในขณะนี้", "error")
     } finally {
       setLoading(false)
     }
   }
+
   return (
-    <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
-      <div className="bg-white rounded-2xl p-6 mx-4 w-full max-w-md">
-        <h3 className="font-bold text-lg mb-4">เสนอเข้าทำงาน</h3>
-        <Input as="textarea" label="แนะนำตัว / แนวทางทำงาน" name="message" value={form.message} onChange={handleChange} rows={4} placeholder="อธิบายประสบการณ์ แนวทาง หรือสิ่งที่คุณจะช่วยงานนี้ได้" error={errors.message} />
-
-        <div className="flex gap-3 mt-6">
-          <button onClick={submit} disabled={loading} className="flex-1 bg-indigo-600 hover:bg-indigo-800 disabled:opacity-50 disabled:cursor-not-allowed text-white py-2 rounded-lg">
-            {loading ? "กำลังส่ง..." : "ส่งข้อเสนอ"}
+    <div className="fixed inset-0 bg-slate-950/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl w-full max-w-md border border-slate-200 shadow-xl overflow-hidden">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+          <h3 className="font-semibold text-slate-900">เสนอตัวเข้าทำงาน</h3>
+          <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-600 rounded-lg transition hover:bg-slate-100">
+            <X size={18} />
           </button>
-
-          <button onClick={onClose} disabled={loading} className="flex-1 bg-gray-100 hover:bg-gray-300 rounded-lg">
-            ยกเลิก
-          </button>
+        </div>
+        
+        <div className="p-5">
+          <Input as="textarea" label="แนะนำตัว / แนวทางการทำงาน" name="message" value={form.message} onChange={handleChange} rows={4} placeholder="อธิบายประสบการณ์และแนวทางที่คุณจะช่วยให้งานนี้สำเร็จ" error={errors.message} />
+          <div className="flex gap-2 mt-5">
+            <button onClick={onClose} disabled={loading} className="flex-1 text-sm font-medium py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition">
+              ยกเลิก
+            </button>
+            <button onClick={submit} disabled={loading} className="flex-1 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white py-2 rounded-xl transition shadow-xs">
+              {loading ? "กำลังส่ง..." : "ยืนยันส่งข้อเสนอ"}
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -67,7 +70,7 @@ const ApplyModal = ({ jobId, onClose, onSuccess }) => {
 
 const JobDetail = () => {
   const { id } = useParams()
-  const { startChat } = useStartChat();
+  const { startChat } = useStartChat()
   const [job, setJob] = useState(null)
   const navigate = useNavigate()
 
@@ -76,7 +79,6 @@ const JobDetail = () => {
 
   const [openApplyModal, setOpenApplyModal] = useState(false)
   const [openReviewModal, setOpenReviewModal] = useState(false)
-
 
   const fetchJob = async () => {
     try {
@@ -88,283 +90,228 @@ const JobDetail = () => {
       setLoading(false)
     }
   }
-  useEffect(() => {
-    fetchJob()
-  }, [id])
+
+  useEffect(() => { fetchJob() }, [id])
 
   const respondOffer = async (action) => {
-    const titleMsg = action === "accept" ? "รับงานนี้?" : "ปฏิเสธ?"
-    const message = action === "accept" ? "คุณต้องการรับงานนี้ใช่หรือไม่?" : "คุณต้องการปฏิเสธข้อเสนอนี้ใช่หรือไม่?"
-    if (!(await Swal.fire({ title: titleMsg, text: message, icon: "warning", showCancelButton:true, confirmButtonText: "ยืนยัน", cancelButtonText: "ยกเลิก"})).isConfirmed) return
+    const titleMsg = action === "accept" ? "ยืนยันรับงานนี้?" : "ปฏิเสธข้อเสนอ?"
+    const message = action === "accept" ? "คุณต้องการรับผิดชอบโปรเจกต์นี้ใช่หรือไม่?" : "คุณต้องการปฏิเสธข้อเสนอนี้ใช่หรือไม่?"
+    const result = await Swal.fire({ title: titleMsg, text: message, icon: "warning", showCancelButton: true, confirmButtonText: "ยืนยัน", cancelButtonText: "ยกเลิก" })
+    if (!result.isConfirmed) return
 
     try {
       await api.patch(`/jobs/offer/${id}/respond`, { action })
-      Swal.fire(action === "accept" ? "รับงานเรียบร้อย 🎉" : "ปฏิเสธข้อเสนอแล้ว", action === "accept" ? "คุณได้รับข้อเสนอนี้เรียบร้อย" : "คุณได้ปฏิเสธข้อเสนอนี้เรียบร้อย", action === "accept" ? "success" : "error")
+      Swal.fire(action === "accept" ? "รับงานเรียบร้อย 🎉" : "ปฏิเสธข้อเสนอแล้ว", "", action === "accept" ? "success" : "success")
       fetchJob()
     } catch (err) {
       console.error(err)
-      Swal.fire("เกิดข้อผิดพลาด!", "ไม่สามารถตอบข้อเสนอได้", "error")
+      Swal.fire("เกิดข้อผิดพลาด!", "ไม่สามารถทำรายการได้", "error")
     }
   }
 
-  const fetchApplicants = () => {
-    fetchJob()
-  }
-
- const handleDeleteJob = async () => {
-    // ถามยืนยัน
+  const handleDeleteJob = async () => {
     const result = await Swal.fire({
       title: 'ต้องการลบประกาศนี้หรือไม่?',
-      text: "หากลบแล้วจะไม่สามารถกู้คืนข้อมูลได้!",
+      text: "หากลบแล้วจะไม่สามารถกู้คืนข้อมูลได้",
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6',
-      confirmButtonText: 'ใช่, ลบเลย',
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: 'ลบประกาศ',
       cancelButtonText: 'ยกเลิก',
       customClass: { popup: 'rounded-2xl' }
     });
 
     if (result.isConfirmed) {
       try {
-        // ส่งคำสั่งลบ API
         await api.delete(`/jobs/${job._id}`); 
-
-        // แสดงผลสำเร็จ
-        await Swal.fire({
-          title: 'ลบเรียบร้อย!',
-          text: 'กำลังกลับไปหน้าประกาศงาน...',
-          icon: 'success',
-          timer: 1500,
-          showConfirmButton: false
-        });
-
-        // 3. จุดสำคัญ: ย้ายไปหน้า Jobboard แทนการรีโหลดหน้าเดิม
+        await Swal.fire({ title: 'ลบเรียบร้อย', icon: 'success', timer: 1500, showConfirmButton: false });
         navigate("/jobboard"); 
-
       } catch (error) {
         console.error(error);
-        Swal.fire({
-          title: 'เกิดข้อผิดพลาด',
-          text: 'ไม่สามารถลบข้อมูลได้',
-          icon: 'error'
-        });
+        Swal.fire({ title: 'เกิดข้อผิดพลาด', text: 'ไม่สามารถลบข้อมูลได้', icon: 'error' });
       }
     }
   };
 
-
-  if (loading) return <div className="text-center py-24 text-slate-500">กำลังโหลดข้อมูล...</div>
-  if (error) return <div className="text-center py-24 text-red-600 font-semibold">{error}</div>
+  if (loading) return <div className="text-center py-24 text-slate-500 font-['Prompt']">กำลังโหลดข้อมูล...</div>
+  if (error) return <div className="text-center py-24 text-red-600 font-medium font-['Prompt']">{error}</div>
   if (!job) return null
 
+  // Components ย่อยที่ถูกเรียกใช้ซ้ำในหน้าจอมือถือและ Desktop
+  const ActionCard = () => (
+    <div className="bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-6 shadow-sm">
+      <div className="flex items-baseline justify-between mb-5">
+        <span className="text-sm font-semibold text-slate-700">งบประมาณ</span>
+        <span className="text-2xl sm:text-3xl font-bold text-indigo-600">฿{formatMoney(job?.rate)}</span>
+      </div>
+
+      <div className="space-y-3">
+        {job.isOwner ? (
+          <>
+            {job.canAccept && (
+              <button onClick={handleDeleteJob} className="w-full flex items-center justify-center gap-2 bg-white border border-red-200 text-red-600 hover:bg-red-50 py-2.5 rounded-xl text-sm font-medium transition-colors">
+                <Trash2 size={16} /> ลบประกาศ
+              </button>
+            )}
+            {job.status === "in_progress" && !job?.completed && (
+              <button onClick={() => setOpenReviewModal(true)} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-xl text-sm font-medium transition-colors">
+                จบงานและรีวิว
+              </button>
+            )}
+            {job.status === "offer" && (
+              <div className="text-sm text-slate-500 text-center py-2.5 bg-slate-50 rounded-xl border border-slate-100">รอการตอบรับจากฟรีแลนซ์</div>
+            )}
+            {job.status === "rejected" && (
+              <div className="text-sm text-red-600 text-center py-2.5 bg-red-50 rounded-xl font-medium">งานถูกปฏิเสธ</div>
+            )}
+            
+            {openReviewModal && (
+              <ReviewModal jobId={id} freelancerId={job?.freelancer} onClose={() => setOpenReviewModal(false)} onSuccess={fetchJob} />
+            )}
+          </>
+        ) : (
+          <>
+            {job.canApply && !job?.isOwner && !job?.hasApplied && (
+              <button onClick={() => setOpenApplyModal(true)} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-xl text-sm font-medium transition shadow-xs">
+                สนใจเสนอตัวรับงาน
+              </button>
+            )}
+            {job.hasApplied && (
+              <div className="text-sm text-slate-600 text-center py-3 bg-slate-50 rounded-xl border border-slate-100">
+                คุณได้ส่งข้อเสนอสำหรับงานนี้แล้ว
+              </div>
+            )}
+            <button
+              onClick={() => {
+                if (job?.createdBy) startChat(job.createdBy._id, job.createdBy.name, job.createdBy.profilePicture)
+              }}
+              className="w-full bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 py-3 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2"
+            >
+              <MessageCircle size={16} className="text-slate-500" /> แชทสอบถาม
+            </button>
+          </>
+        )}
+
+        {/* Status Indicators */}
+        {job.completed && <div className="text-sm text-slate-500 text-center mt-3 pt-3 border-t border-slate-100">โปรเจกต์เสร็จสิ้นแล้ว</div>}
+        {job.isFreelancer && job.status === "in_progress" && <div className="text-sm text-emerald-600 text-center mt-3 pt-3 border-t border-slate-100 font-medium">คุณเป็นผู้รับผิดชอบงานนี้</div>}
+        {job.isFreelancer && job.status === "rejected" && <div className="text-sm text-red-600 text-center mt-3 pt-3 border-t border-slate-100 font-medium">คุณปฏิเสธงานนี้แล้ว</div>}
+      </div>
+
+      {/* Accept / Reject card for Freelancer receiving an offer */}
+      {job.status === "offer" && !job.isOwner && (
+        <div className="mt-5 pt-5 border-t border-slate-100">
+          <h3 className="text-xs font-semibold text-slate-700 mb-3 uppercase tracking-wide">ตอบรับคำเชิญ</h3>
+          <div className="grid grid-cols-2 gap-2">
+            <button onClick={() => respondOffer("accept")} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-xl text-sm font-medium transition">
+              รับงาน
+            </button>
+            <button onClick={() => respondOffer("reject")} className="w-full bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 py-2 rounded-xl text-sm font-medium transition">
+              ปฏิเสธ
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+
+  const DatesInfoCard = () => (
+    <div className="bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-6 shadow-sm">
+      <h3 className="text-sm font-semibold text-slate-800 mb-4">ข้อมูลระยะเวลา</h3>
+      <div className="space-y-4">
+        <div>
+          <p className="text-xs text-slate-500 mb-1">กำหนดส่งงาน (Deadline)</p>
+          <p className="text-sm font-medium text-slate-700">{FormatDate(job?.deadline) || 'ไม่ระบุ'}</p>
+          <p className="text-xs text-slate-400 mt-0.5">{job?.deadline ? formatRelativeTime(job?.deadline) : ''}</p>
+        </div>
+        <div>
+          <p className="text-xs text-slate-500 mb-1">สิ้นสุดประกาศรับสมัคร</p>
+          <p className="text-sm font-medium text-slate-700">{FormatDate(job?.endPost) || 'ไม่ระบุ'}</p>
+          <p className="text-xs text-slate-400 mt-0.5">{job?.endPost ? formatRelativeTime(job?.endPost) : ''}</p>
+        </div>
+      </div>
+    </div>
+  )
+
   return (
-    <div className="flex flex-col flex-1 min-h-screen bg-slate-50">
-      <main className="px-4 sm:px-6 lg:px-8 py-12 md:mx-20">
-        <BackButton />
+    <div className="flex flex-col flex-1 min-h-screen bg-[#F8FAFC] font-['Prompt',_sans-serif] antialiased">
+      {openApplyModal && <ApplyModal jobId={id} onClose={() => setOpenApplyModal(false)} onSuccess={fetchJob} />}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left: Job Content */}
-          <section className="lg:col-span-2 space-y-8">
-            <div className="bg-white rounded-3xl border border-gray-100 p-8 min-h-[500px] text-lg">
-              <div className="flex items-start justify-between gap-6">
-                <div className="flex-1">
-                  <h1 className="text-2xl font-extrabold text-indigo-600 mb-3">{job?.title}</h1>
-                  <div className="flex items-center gap-3 text-slate-500 text-sm justify-between">
-                    {job?.createdBy && <ProfileCard userId={job.createdBy._id} />}
-                    <div className="flex gap-4">
-                      <div className="flex flex-row gap-2">
-                        <p className="text-black">หมวดหมู่งาน: </p>
-                        <p>{job?.category ? job.category : '-'}</p>
-                      </div>
-                      <div className="flex flex-row gap-2">
-                        <p className="text-black">ลักษณะการจ้าง: </p>
-                        <p>{job?.type ? job.type : '-'}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                {/* <div className="flex items-center gap-3">
-                  <button onClick={toggleFavorite} className={`p-2 rounded-full transition-colors ${isFavorite ? "bg-red-100 text-red-600 hover:bg-red-200" : "bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-red-500"}`} title={isFavorite ? "ลบออกจากรายการโปรด" : "เพิ่มเข้าไปในรายการโปรด"}>
-                  <Heart size={20} className={isFavorite ? "fill-current" : ""} />
-                  </button>
-                  </div> */}
-              </div>
-              <hr className="border-gray-200 mt-4 mb-6" />
-              <h2 className="font-bold text-slate-800 mb-4">รายละเอียดงาน</h2>
-              <p className="text-slate-600 leading-relaxed text-sm whitespace-pre-line">{job?.description}</p>
-            </div>
-
-            <section className="space-y-8 hidden lg:block">
-              <div className="bg-white rounded-3xl border border-gray-100 p-8 min-h-[300px] text-lg">
-                <h2 className="font-bold text-indigo-600 mb-4 ">ฟรีแลนซ์ที่สนใจ ทั้งหมด {job?.applicants?.length || 0} คน</h2>
-                <div className="border border-gray-100 my-3">
-                  {job?.applicants?.map((a) => (
-                    <ApplicantCard
-                      key={a._id}
-                      applicant={a}
-                      canAccept={job?.canAccept}
-                      onAccept={() => {
-                        ;(fetchApplicants(), fetchJob())
-                      }}
-                      jobId={id}
-                    />
-                  ))}
-                </div>
-              </div>
-            </section>
-          </section>
-
-          {/* Right: Sidebar */}
-          <aside className="space-y-6 lg:sticky lg:top-24 self-start">
-            <SectionCard>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-600">
-                <div className="flex flex-col">
-                  <p className="p-1 text-black">กำหนดส่งงาน</p>
-                  <p className="px-1 ">{FormatDate(job?.deadline)}</p>
-                  <p className="px-1 text-sm">{formatRelativeTime(job?.deadline)}</p>
-                </div>
-                <div className="flex flex-col ">
-                  <p className="p-1 text-black">สิ้นสุดประกาศ</p>
-                  <p className="px-1">{FormatDate(job?.endPost)}</p>
-                  <p className="px-1 text-sm">{formatRelativeTime(job?.endPost)}</p>
-                </div>
-              </div>
-              {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-600">
-                <div className="flex flex-col">
-                  <p className="p-1 text-black">หมวดหมู่งาน: </p>
-                  <p className="px-1">{job?.category}</p>
-                </div>
-                <div className="flex flex-col ">
-                  <p className="p-1 text-black">ลักษณะการจ้าง: </p>
-                  <p className="px-1">{job?.type}</p>
-                </div>
-              </div> */}
-            </SectionCard>
-
-            <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm">
-              <div className="flex justify-between p-2 mb-4 ">
-                <p className="text-slate-800 text-xl font-semibold">งบประมาณ</p>
-                <span className="text-2xl font-extrabold text-indigo-600">฿{formatMoney(job?.rate)}</span>
-              </div>
-              {job.isOwner && (
-                <div className="w-full mt-auto px-4 pb-4"> 
-                {job.canAccept && (
-                  <button onClick={handleDeleteJob} className="group w-full flex items-center justify-center gap-2 bg-linear-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white py-3 rounded-xl font-bold shadow-lg shadow-red-500/30 hover:shadow-red-500/50 transition-all duration-300 active:scale-95" >
-                    <Trash2 size={20} className="transition-transform duration-300 group-hover:rotate-12" />
-                    ลบประกาศ
-                  </button>
-                )}
-                {job.status === "in_progress" && !job?.completed && (
-                  <button onClick={() => setOpenReviewModal(true)} className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-bold shadow-lg shadow-green-500/30 transition-all active:scale-95">
-                    จบงาน
-                  </button>
-                )}
-                {job.status === "offer" && (
-                  <div className="text-sm text-slate-500 text-center mt-2">รอการตอบรับจากฟรีแลนซ์</div>
-                )}
-                {job.status === "rejected" && (
-                  <div className="text-sm text-red-600 text-center mt-2 font-bold">งานถูกปฏิเสธ</div>
-                )}
-                {openReviewModal && (
-                  <ReviewModal
-                    jobId={id}
-                    freelancerId={job?.freelancer}
-                    onClose={() => {
-                      setOpenReviewModal(false)
-                    }}
-                    onSuccess={fetchJob}
-                  />
-                )}
-              </div>
-              )}
-
-              {!job?.isOwner && (
-                <div className="grid grid-cols-2 gap-3">
-                  {job.canApply && !job?.isOwner && !job?.hasApplied && (
-                    <>
-                      <button onClick={() => setOpenApplyModal(true)} className="bg-indigo-600 text-white py-3 rounded-xl font-bold">
-                        สนใจงานนี้
-                      </button>
-                      {openApplyModal && (
-                        <ApplyModal
-                          jobId={id}
-                          onClose={() => {
-                            setOpenApplyModal(false)
-                            fetchJob()
-                          }}
-                        />
-                      )}
-                    </>
-                  )}
-                  {job.hasApplied && (
-                    <p className="text-sm text-gray-500 text-center py-3">
-                      คุณได้ส่งข้อเสนอ
-                      <br />
-                      งานนี้แล้ว
-                    </p>
-                  )}
-                  <button
-                    onClick={() => {
-                      if (job?.createdBy) {
-                        startChat(
-                          job.createdBy._id,
-                          job.createdBy.name, 
-                          job.createdBy.profilePicture, 
-                        )
-                      }
-                    }}
-                    className="bg-slate-100 text-slate-700 py-3 rounded-xl font-bold hover:bg-slate-200 transition-colors flex items-center justify-center gap-2"
-                  >
-                    <MessageCircle size={18} />
-                    แชท
-                  </button>
-                </div>
-              )}
-              {job.completed && <div className="text-sm text-gray-500 text-center mt-4">งานเสร็จสิ้นแล้ว</div>}
-              {job.isFreelancer && job.status === "in_progress" && <div className="text-sm text-green-600 text-center mt-4">คุณได้รับงานนี้แล้ว</div>}
-              {job.isFreelancer && job.status === "rejected" && <div className="text-sm text-red-600 text-center mt-4">คุณปฏิเสธงานนี้แล้ว</div>}
-            </div>
-            {job.status === "offer" && !job.isOwner && (
-              <SectionCard>
-                <h3 className="font-semibold text-lg mb-2">ตอบรับข้อเสนอหรือไม่</h3>
-                <div className="mt-4 grid grid-cols-2 gap-3">
-                  <button onClick={() => respondOffer("accept")} className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-bold">
-                    รับทำงาน
-                  </button>
-                  <button onClick={() => respondOffer("reject")} className="w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl font-bold">
-                    ปฏิเสธ
-                  </button>
-                </div>
-              </SectionCard>
-            )}
-            {job?.freelancer && (
-              <SectionCard title={"ฟรีแลนซ์"}>
-                <ProfileCard userId={job.freelancer} />
-              </SectionCard>
-            )}
-          </aside>
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-20">
+        <div className="mb-4">
+          <BackButton />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-10 lg:hidden">
-          <section className="lg:col-span-2 space-y-8">
-            <div className="bg-white rounded-3xl border border-gray-100 p-8 min-h-[300px] text-lg">
-              <h2 className="font-bold text-indigo-600 mb-4 ">ฟรีแลนซ์ที่สนใจ ทั้งหมด {job?.applicants?.length || 0} คน</h2>
-              <div className="border border-gray-100 my-3">
-                {job?.applicants?.map((a) => (
-                  <ApplicantCard
-                    key={a._id}
-                    applicant={a}
-                    canAccept={job?.canAccept}
-                    onAccept={() => {
-                      ;(fetchApplicants(), fetchJob())
-                    }}
-                    jobId={id}
-                  />
-                ))}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+          {/* คอลัมน์ซ้าย: เนื้อหาหลัก */}
+          <section className="lg:col-span-2 space-y-6">
+            
+            {/* กล่องรายละเอียดงาน */}
+            <div className="bg-white rounded-2xl border border-slate-200/90 p-6 sm:p-8 shadow-sm">
+              <div className="flex flex-col gap-3 mb-6">
+                <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 leading-tight">{job?.title}</h1>
+                <div className="flex flex-wrap items-center gap-2 text-sm text-slate-500">
+                  <span className="font-medium text-slate-700">{job?.category || '-'}</span>
+                  <span>•</span>
+                  <span>{job?.type || '-'}</span>
+                  {job?.createdBy && (
+                    <>
+                      <span>•</span>
+                      <span>โพสต์โดย <span className="font-medium text-slate-700">{job.createdBy.name}</span></span>
+                    </>
+                  )}
+                </div>
+              </div>
+              
+              <div className="border-t border-slate-100 pt-6">
+                <h2 className="text-sm font-semibold text-slate-900 mb-3 uppercase tracking-wider">รายละเอียดงาน</h2>
+                <div className="text-slate-600 text-sm sm:text-base leading-relaxed whitespace-pre-line font-normal">
+                  {job?.description}
+                </div>
               </div>
             </div>
+
+            {/* แสดง ActionCard บนมือถือ (แทรกไว้ใต้รายละเอียดงานทันที) */}
+            <div className="block lg:hidden space-y-6">
+              <ActionCard />
+              <DatesInfoCard />
+            </div>
+
+            {/* ผู้สมัคร (แสดงเฉพาะเจ้าของประกาศ) */}
+            {job?.isOwner && (
+              <div className="bg-white rounded-2xl border border-slate-200/90 p-6 sm:p-8 shadow-sm">
+                <div className="flex items-center justify-between mb-5 border-b border-slate-100 pb-4">
+                  <h2 className="font-bold text-slate-900">ผู้ที่สนใจเสนอตัวรับงาน</h2>
+                  <span className="text-xs font-semibold px-2.5 py-1 bg-slate-100 text-slate-600 rounded-full">{job?.applicants?.length || 0} คน</span>
+                </div>
+                
+                {job?.applicants?.length > 0 ? (
+                  <div className="space-y-3">
+                    {job.applicants.map((a) => (
+                      <ApplicantCard key={a._id} applicant={a} canAccept={job?.canAccept} onAccept={() => fetchJob()} jobId={id} />
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-slate-500 text-center py-6">ยังไม่มีผู้เสนอตัวรับงาน</p>
+                )}
+              </div>
+            )}
           </section>
+
+          {/* คอลัมน์ขวา: Sidebar (Desktop เท่านั้น) */}
+          <aside className="hidden lg:block lg:col-span-1 space-y-6 lg:sticky lg:top-6">
+            <ActionCard />
+            <DatesInfoCard />
+            
+            {/* โปรไฟล์ฟรีแลนซ์ที่รับงานไปแล้ว (ถ้ามี) */}
+            {job?.freelancer && (
+              <div className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-sm">
+                <h3 className="text-sm font-semibold text-slate-800 mb-4">ฟรีแลนซ์ที่รับผิดชอบโปรเจกต์</h3>
+                <ProfileCard userId={job.freelancer} />
+              </div>
+            )}
+          </aside>
         </div>
       </main>
     </div>

@@ -6,8 +6,26 @@ const passport = require("./config/passport");
 
 const app = express();
 
+const allowedOrigins = process.env.ALLOWED_ORIGINS 
+  ? process.env.ALLOWED_ORIGINS.split(",") 
+  : [];
+  
+const corsOptions = {
+  origin: (origin, callback) => {
+    // !origin อนุญาตคำขอที่ไม่มี origin header เช่น Postman, Mobile App หรือ Server-to-Server
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true, // ตั้งเป็น true หาก Frontend มีการส่ง Cookies หรือ Authorization Header
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+};
+
 // middleware
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(dbMiddleware)
 app.use(passport.initialize())

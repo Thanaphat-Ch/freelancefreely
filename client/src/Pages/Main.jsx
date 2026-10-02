@@ -1,309 +1,418 @@
 import { useEffect, useState, useMemo } from "react"
-import { Search, User, Filter, X } from "lucide-react"
+import { Search, User, Filter, X, ChevronDown, Check, SlidersHorizontal, RefreshCw, ArrowDown } from "lucide-react"
 import api from "../api/axios"
 import { FreelancerCard } from "../Components/Card"
+import { Footer } from "../Components/footer";
 
-// --- Mock Data ---
-const freelancerCategories = [
-  { name: "Full Stack Developer", count: "" },
-  { name: "Frontend Specialist", count: "" },
-  { name: "Backend Engineer", count: "" },
-  { name: "Mobile Developer", count: "" },
-  { name: "DevOps & Cloud", count: "" },
-  { name: "UI/UX Designer", count: "" },
-  { name: "Mobile Application Developer", count: "" },
-  { name: "Software Developer / Software Engineer", count: "" },
-  { name: "Game Developer", count: "" },
-  { name: "Data Developer / Data Engineer", count: "" },
-  { name: "AI / Machine Learning Developer", count: "" },
-  { name: "DevOps Engineer", count: "" },
-  { name: "Cloud Engineer", count: "" },
-  { name: "Database Developer", count: "" },
-  { name: "QA / Software Tester", count: "" },
-  { name: "Embedded Systems Developer", count: "" },
-  { name: "IoT Developer", count: "" },
-  { name: "Blockchain Developer", count: "" },
-  { name: "System Engineer", count: "" },
-  { name: "Cyber Security Specialist", count: "" },
-  { name: "Penetration Tester (Ethical Hacker)", count: "" },
-  { name: "System Analyst (SA)", count: "" },
-  { name: "Technical Project Manager", count: "" },
-  { name: "Product Owner (PO)", count: "" },
-  { name: "WordPress / CMS Developer", count: "" },
-  { name: "E-commerce Developer (Shopify/Magento)", count: "" },
-  { name: "Site Reliability Engineer (SRE)", count: "" },
-  { name: "AR / VR Developer", count: "" },
+const FREELANCER_CATEGORIES = [
+  "Full Stack Developer",
+  "Frontend Specialist",
+  "Backend Engineer",
+  "Mobile Developer",
+  "DevOps & Cloud",
+  "UI/UX Designer",
+  "Software Developer / Software Engineer",
+  "Game Developer",
+  "Data Developer / Data Engineer",
+  "AI / Machine Learning Developer",
+  "Cloud Engineer",
+  "Database Developer",
+  "QA / Software Tester",
+  "System Analyst (SA)",
+  "Technical Project Manager",
+  "Product Owner (PO)",
+  "WordPress / CMS Developer",
+  "E-commerce Developer",
+  "Cyber Security Specialist"
 ]
 
-const FilterSection = ({ selectedCategories, onCategoryChange, onClearFilters, onApplyFilters }) => {
-  return (
-    <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 sticky top-24 transform translate-y-0 ">
-      <div className="flex items-center justify-between mb-6 border-b pb-4">
-        <h3 className="font-bold text-2xl text-slate-800 flex items-center gap-2">
-          <Filter size={20} className="text-indigo-600" /> ตัวกรอง
-        </h3>
-        <button onClick={onClearFilters} className="text-sm text-indigo-600 font-medium hover:text-indigo-800 transition-colors">
-          ล้างค่า
-        </button>
-      </div>
+const POPULAR_SKILLS = ["React", "Node.js", "Full Stack", "UI/UX", "Python", "DevOps", "Mobile Developer"]
 
-      {/* Categories */}
-      <div className="mb-8 h-[400px] overflow-y-auto">
-        <h4 className="text-base font-semibold text-slate-900 mb-4">ทักษะ/ความเชี่ยวชาญ</h4>
-        <ul className="space-y-3">
-          {freelancerCategories.map((cat, idx) => (
-            <li key={idx} className="flex items-center justify-between group cursor-pointer">
-              <label className="flex items-center gap-3 w-full cursor-pointer">
-                <input type="checkbox" checked={selectedCategories.includes(cat?.name)} onChange={() => onCategoryChange(cat?.name)} className="w-5 h-5 rounded-md border-gray-300 text-indigo-600 focus:ring-indigo-500 transition-shadow shadow-sm checked:shadow-indigo-300" />
-                <span className="text-slate-700 text-sm group-hover:text-indigo-600 transition-colors font-medium">{cat?.name}</span>
-              </label>
-              {/* <span className="text-xs text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full font-semibold">{cat.count}</span> */}
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      <button onClick={onApplyFilters} className="w-full mt-8 bg-linear-to-r from-indigo-600 to-cyan-500 text-white py-3 rounded-xl font-bold hover:from-indigo-700 hover:to-cyan-600 transition-all shadow-lg shadow-indigo-500/40 transform hover:scale-[1.01]">
-        ใช้ตัวกรอง
-      </button>
-    </div>
-  )
-}
-
-const HeroSection = ({ searchTerm, onSearchChange, onSearch }) => (
-  <div className="bg-slate-950 text-white relative overflow-hidden border-b border-indigo-900/50 h-[550px] md:min-h-[670px]">
-    {/* Background Mesh/Gradient Effect */}
-    <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "radial-gradient(ellipse at center, #1E3A8A 0%, transparent 80%)" }}></div>
-    <div className="absolute top-0 right-0 w-1/2 h-full bg-linear-to-l from-indigo-900/60 to-transparent pointer-events-none"></div>
-    <div className="absolute -bottom-24 -left-24 w-72 h-72 bg-cyan-500/15 rounded-full blur-3xl pointer-events-none"></div>
-
-    <div className="max-w-7xl mx-auto px-6 py-20 md:py-24 relative z-10 text-center">
-      <h1 className="text-4xl md:text-6xl font-extrabold mb-6 leading-tight tracking-tight">
-        หา <span className="text-transparent bg-clip-text bg-linear-to-r from-indigo-400 to-cyan-400">ฟรีแลนซ์</span>
-        <br />
-        ที่ใช่สำหรับโปรเจกต์ของคุณ
-      </h1>
-      <p className="text-slate-300 text-lg mb-12 max-w-3xl mx-auto">ค้นหาฟรีแลนซ์ที่มีทักษะและประสบการณ์ตรงกับความต้องการของคุณ เลือกจากผู้เชี่ยวชาญมากมายที่พร้อมทำงาน</p>
-
-      {/* Search Bar */}
-      <div className="bg-white p-1.5 md:p-3 rounded-full shadow-2xl shadow-indigo-900/50 max-w-3xl mx-auto flex items-center border-2 border-transparent focus-within:border-indigo-500 transition-all">
-        <div className="pl-3 md:pl-5 text-slate-400 shrink-0">
-          <Search size={18} className="md:w-[22px]" />
-        </div>
-        <input type="text" value={searchTerm} onChange={(e) => onSearchChange(e.target.value)} placeholder="ค้นหาฟรีแลนซ์..." className="grow p-2 md:p-3 text-slate-800 focus:outline-none bg-transparent text-sm md:text-base w-full" />
-        <button onClick={onSearch} className="bg-indigo-600 text-white px-4 md:px-8 py-2 md:py-3 rounded-full text-sm md:text-base font-bold hover:bg-indigo-700 transition-colors shrink-0">
-          ค้นหา
-        </button>
-      </div>
-
-      {/* Popular Skills */}
-      {/* <div className="mt-8 flex items-center gap-3 justify-center flex-wrap text-sm">
-        <span className="text-slate-400 font-medium">ทักษะยอดนิยม:</span>
-        {["React", "Node.js", "UI/UX", "Python", "AWS", "Figma"].map((skill) => (
-          <span key={skill} className="px-4 py-1.5 rounded-full bg-slate-800 text-slate-300 hover:bg-indigo-500/20 hover:text-indigo-300 cursor-pointer transition-colors border border-slate-700 font-medium hover:border-indigo-500">
-            {skill}
-          }</span>
-        ))}
-      </div> */}
-    </div>
-  </div>
-)
-
-// --- Main Page ---
-
-const Main = () => {
-  // State for Mobile Filter visibility
-  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false)
-
-  // State for filters
-  const [selectedCategories, setSelectedCategories] = useState([])
-  
-  // ✅ 1. ยุบ State: เหลือแค่ 'freelancers' (Raw Data จาก API) และ 'filters' (ตัวแปรควบคุม)
-  // ลบ filteredFreelancers และ isFilterApplied ออก
+export default function Main() {
   const [freelancers, setFreelancers] = useState([])
+  const [selectedCategories, setSelectedCategories] = useState([])
   const [searchTerm, setSearchTerm] = useState("")
   const [sortBy, setSortBy] = useState("latest")
 
-  // ✅ 2. ปรับ `useEffect` สำหรับ Fetch ข้อมูลให้สมบูรณ์ขึ้น
-  // เพิ่ม `loading` และ `error` state เพื่อจัดการ UX ตอน API ยังโหลดไม่เสร็จ
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false)
 
+  // Fetch ข้อมูล
   useEffect(() => {
-    const fetchFreelancers = async () => {
-      setIsLoading(true);
-      setError(null);
+    let isMounted = true
+    const fetchData = async () => {
+      setIsLoading(true)
+      setError(null)
       try {
         const res = await api.get("/freelancers")
-        setFreelancers(res.data)
+        if (isMounted) setFreelancers(res.data || [])
       } catch (err) {
-        console.error("โหลด freelancer ไม่สำเร็จ", err)
-        setError("ไม่สามารถโหลดข้อมูลฟรีแลนซ์ได้ในขณะนี้ กรุณาลองใหม่อีกครั้ง")
+        if (isMounted) {
+          console.error(err)
+          setError("ไม่สามารถโหลดข้อมูลฟรีแลนซ์ได้ในขณะนี้")
+        }
       } finally {
-        setIsLoading(false);
+        if (isMounted) setIsLoading(false)
       }
     }
+    fetchData()
+    return () => { isMounted = false }
+  }, [])
 
-    fetchFreelancers()
-  }, []) // ยิง API แค่ครั้งเดียวตอน Mount
+  const filteredFreelancers = useMemo(() => {
+    let result = freelancers.filter((f) => f.isActive !== false)
 
-  // ✅ 3. หัวใจสำคัญ: ใช้ `useMemo` เพื่อคำนวณการกรอง (Filtering) และการเรียง (Sorting) ในตัวเดียว
-  // ลดการใช้ useEffect ซ้ำซ้อนและทำให้ Performance ดีขึ้นมาก
-  const displayFreelancers = useMemo(() => {
-    // กวาดเฉพาะคนที่เป็น isActive เท่านั้น
-    let result = freelancers.filter(f => f.isActive === true);
-
-    // Apply: กรองตามทักษะ (Categories)
     if (selectedCategories.length > 0) {
-      result = result.filter((f) => selectedCategories.includes(f.category));
+      result = result.filter((f) => selectedCategories.includes(f.category))
     }
 
-    // Apply: ค้นหาตามคำ (Search)
-    if (searchTerm.trim() !== "") {
-      const keyword = searchTerm.toLowerCase()
-      result = result.filter((f) => 
-        f.title?.toLowerCase().includes(keyword) || 
-        f.category?.toLowerCase().includes(keyword) || 
-        f.description?.toLowerCase().includes(keyword)
+    if (searchTerm.trim()) {
+      const q = searchTerm.toLowerCase().trim()
+      result = result.filter(
+        (f) =>
+          f.title?.toLowerCase().includes(q) ||
+          f.category?.toLowerCase().includes(q) ||
+          f.description?.toLowerCase().includes(q) ||
+          f.skills?.some((s) => s.toLowerCase().includes(q))
       )
     }
 
-    // Apply: เรียงลำดับ (Sorting)
-    if (sortBy === "latest") {
-      result.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-    } else if (sortBy === "rateLow") {
-      result.sort((a, b) => a.rate - b.rate)
-    } else if (sortBy === "rateHigh") {
-      result.sort((a, b) => b.rate - a.rate)
-    }
+    return [...result].sort((a, b) => {
+      if (sortBy === "rateLow") return (a.rate || 0) - (b.rate || 0)
+      if (sortBy === "rateHigh") return (b.rate || 0) - (a.rate || 0)
+      return new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
+    })
+  }, [freelancers, selectedCategories, searchTerm, sortBy])
 
-    return result;
-  }, [freelancers, selectedCategories, searchTerm, sortBy]); // คำนวณใหม่เมื่อค่าเหล่านี้เปลี่ยนเท่านั้น
-
-  // Handle category checkbox change
-  const handleCategoryChange = (categoryName) => {
-    setSelectedCategories((prev) => (prev.includes(categoryName) ? prev.filter((cat) => cat !== categoryName) : [...prev, categoryName]))
+  const toggleCategory = (cat) => {
+    setSelectedCategories((prev) =>
+      prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat]
+    )
   }
 
-  const handleClearFilters = () => {
+  const handleReset = () => {
     setSelectedCategories([])
     setSearchTerm("")
-    // ✅ ไม่ต้องสั่ง setFilteredFreelancers แล้ว เพราะ useMemo จัดการให้
   }
 
-  // Handle apply for Search & Mobile view
-  const handleApplyFilters = () => {
-    // ✅ ไม่ต้องสั่ง setFilteredFreelancers แล้วuseMemo จัดการให้อัตโนมัติเมื่อsearchTerm หรือ selectedCategories เปลี่ยน
-    setIsMobileFilterOpen(false)
+  const scrollToContent = () => {
+    const el = document.getElementById("freelancer-list")
+    if (el) el.scrollIntoView({ behavior: "smooth" })
   }
 
   return (
-    <div className="flex flex-1 flex-col min-h-screen bg-slate-50 font-['Prompt',sans-serif]">
-      {/* Inject Font */}
-      <style>
-        {`
-                @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&display=swap');
-                body { font-family: 'Prompt', sans-serif; }
-                `}
-      </style>
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 flex flex-1 flex-col font-['Prompt',sans-serif] antialiased">
+      {/* 1. Hero Section แบบเต็มจอ (Full Viewport Height) */}
+      <section className="relative min-h-[92vh] flex flex-col justify-center items-center bg-[#070D18] text-white px-4 py-16 overflow-hidden border-b border-slate-800">
+        {/* Glow & Backdrop Mesh Effects */}
+        <div className="absolute inset-0 opacity-25 bg-[radial-gradient(#38BDF8_1px,transparent_1px)] background-size-[24px_24px] pointer-events-none" />
+        <div className="absolute top-1/4 -left-32 w-96 h-96 bg-indigo-600/20 rounded-full blur-[140px] pointer-events-none" />
+        <div className="absolute bottom-10 -right-32 w-96 h-96 bg-cyan-500/15 rounded-full blur-[140px] pointer-events-none" />
 
-      <HeroSection searchTerm={searchTerm} onSearchChange={setSearchTerm} onSearch={handleApplyFilters} />
+        <div className="relative max-w-4xl w-full mx-auto text-center z-10 my-auto">
 
-      <main className="flex flex-1 overflow-hidden max-w-7xl mx-2 sm:mx-20 md:32 lg:mx-32 px-4 sm:px-6 lg:px-4 py-14">
-        <div className="flex flex-col lg:flex-row gap-6">
-          {/* Sidebar - Desktop */}
-          <aside className="xl:w-[300px] hidden lg:block shrink-0 lg:pr-4">
-            <FilterSection selectedCategories={selectedCategories} onCategoryChange={handleCategoryChange} onClearFilters={handleClearFilters} onApplyFilters={handleApplyFilters} />
+          {/* Heading */}
+          <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight leading-[1.2] mb-6">
+            หา <span className="text-transparent bg-clip-text bg-linear-to-r from-indigo-400 via-sky-400 to-cyan-300">ฟรีแลนซ์</span> ที่ใช่
+            <br />สำหรับโปรเจกต์ของคุณ
+          </h1>
+          <p className="text-slate-300 text-base sm:text-lg max-w-2xl mx-auto mb-10 leading-relaxed font-light">
+            รวบรวมผู้เชี่ยวชาญทั้ง Full Stack, DevOps, AI และ UI/UX ตรวจสอบผลงานและคุยตรงกับฟรีแลนซ์ได้ทันที
+          </p>
+
+          {/* Search Box */}
+          <div className="max-w-2xl mx-auto">
+            <div className="bg-white/95 backdrop-blur-md p-2 rounded-2xl shadow-2xl shadow-indigo-950/60 border border-white/20 flex items-center gap-2 focus-within:ring-4 focus-within:ring-indigo-500/20 transition-all">
+              <div className="pl-3 text-slate-400">
+                <Search size={20} />
+              </div>
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="ค้นหาชื่อตำแหน่ง หรือทักษะ เช่น React, Node.js..."
+                className="w-full bg-transparent py-2.5 px-2 text-slate-900 text-sm sm:text-base placeholder-slate-400 focus:outline-none"
+              />
+              {searchTerm && (
+                <button
+                  type="button"
+                  onClick={() => setSearchTerm("")}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition"
+                >
+                  <X size={16} />
+                </button>
+              )}
+              <button
+                onClick={scrollToContent}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-3 rounded-xl text-sm sm:text-base transition-all shrink-0 shadow-md shadow-indigo-600/30"
+              >
+                ค้นหา
+              </button>
+            </div>
+          </div>
+
+          {/* Popular Tag Pills */}
+          <div className="mt-8 flex items-center justify-center gap-2 flex-wrap text-xs sm:text-sm">
+            <span className="text-slate-400">ทักษะยอดนิยม:</span>
+            {POPULAR_SKILLS.map((skill) => (
+              <button
+                key={skill}
+                onClick={() => {
+                  setSearchTerm(skill)
+                  scrollToContent()
+                }}
+                className="px-3 py-1 rounded-full bg-slate-800/80 hover:bg-indigo-600/30 text-slate-300 hover:text-white border border-slate-700/80 hover:border-indigo-400/50 transition-colors"
+              >
+                {skill}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Scroll Indicator */}
+        <button
+          onClick={scrollToContent}
+          className="relative z-10 mt-auto flex flex-col items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors cursor-pointer pt-6"
+        >
+          <span>เลื่อนดูฟรีแลนซ์</span>
+          <ArrowDown size={16} className="animate-bounce" />
+        </button>
+      </section>
+
+      {/* 2. Main Content Section (แก้ปัญหาหน้าหดด้วย min-h-screen flex) */}
+      <main id="freelancer-list" className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div className="flex flex-col lg:flex-row gap-8 items-start">
+          
+          {/* Desktop Filter Sidebar */}
+          <aside className="hidden lg:block w-72 shrink-0 sticky top-6">
+            <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+              <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
+                <span className="font-bold text-sm text-slate-900 flex items-center gap-2">
+                  <SlidersHorizontal size={16} className="text-indigo-600" />
+                  ทักษะและความเชี่ยวชาญ
+                </span>
+                {selectedCategories.length > 0 && (
+                  <button
+                    onClick={handleReset}
+                    className="text-xs text-indigo-600 hover:text-indigo-800 font-semibold"
+                  >
+                    ล้างค่า
+                  </button>
+                )}
+              </div>
+
+              <div className="mt-3 max-h-[420px] overflow-y-auto space-y-0.5 pr-1 text-xs">
+                {FREELANCER_CATEGORIES.map((cat) => {
+                  const active = selectedCategories.includes(cat)
+                  return (
+                    <label
+                      key={cat}
+                      className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg cursor-pointer transition select-none ${
+                        active ? "bg-indigo-50 text-indigo-900 font-medium" : "text-slate-600 hover:bg-slate-50"
+                      }`}
+                    >
+                      <div
+                        className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
+                          active ? "bg-indigo-600 border-indigo-600 text-white" : "border-slate-300 bg-white"
+                        }`}
+                      >
+                        {active && <Check size={11} strokeWidth={3} />}
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={active}
+                        onChange={() => toggleCategory(cat)}
+                        className="sr-only"
+                      />
+                      <span className="truncate">{cat}</span>
+                    </label>
+                  )
+                })}
+              </div>
+            </div>
           </aside>
 
-          {/* Mobile Filter Modal */}
-          {isMobileFilterOpen && (
-            <div className="fixed inset-0 bg-slate-900 bg-opacity-70 z-40 lg:hidden" onClick={() => setIsMobileFilterOpen(false)}>
-              <div className="bg-white absolute left-0 top-0 h-full w-3/4 p-6 shadow-2xl overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-                <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-2xl font-bold text-slate-800">ตัวกรอง</h3>
-                  <button onClick={() => setIsMobileFilterOpen(false)} className="p-2 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200">
-                    <X size={24} />
-                  </button>
-                </div>
-                <FilterSection selectedCategories={selectedCategories} onCategoryChange={handleCategoryChange} onClearFilters={handleClearFilters} onApplyFilters={handleApplyFilters} />
-              </div>
-            </div>
-          )}
-
-          {/* Main Content */}
-          <section className="grow min-h-[600px]">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-              <div>
-                <p className="text-slate-800 text-xl mt-1">
-                  {/* ✅ ปรับ UI คำนวณจำนวนตาม displayFreelancers */}
-                  {(selectedCategories.length > 0 || searchTerm !== "") ? (
-                    <>
-                      พบ <span className="font-bold text-indigo-600">{displayFreelancers.length}</span> ฟรีแลนซ์ที่ตรงกับตัวกรอง
-                    </>
-                  ) : (
-                    <>
-                      พบ <span className="font-bold text-indigo-600">{displayFreelancers.length}</span> ฟรีแลนซ์ที่พร้อมทำงาน
-                    </>
-                  )}
-                </p>
+          {/* Results Area (ล็อค min-h-[640px] ป้องกันหน้าหดตัว) */}
+          <section className="flex-1 w-full min-w-0 flex flex-col min-h-[640px]">
+            {/* Toolbar */}
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 pb-4 mb-6 border-b border-slate-200">
+              <div className="text-sm text-slate-600">
+                พบฟรีแลนซ์ทั้งหมด <span className="font-bold text-slate-900">{filteredFreelancers.length}</span> คน
               </div>
 
-              <div className="flex items-center gap-3 w-full sm:w-auto">
+              <div className="flex items-center gap-2.5">
                 {/* Mobile Filter Button */}
-                <button onClick={() => setIsMobileFilterOpen(true)} className="lg:hidden flex-1 flex items-center justify-center gap-2 bg-white border border-gray-200 px-4 py-2.5 rounded-xl text-slate-700 font-medium hover:bg-indigo-50 hover:border-indigo-300 transition-all shadow-sm">
-                  <Filter size={16} className="text-indigo-600" /> ตัวกรอง
+                <button
+                  onClick={() => setIsMobileFilterOpen(true)}
+                  className="lg:hidden flex items-center gap-2 bg-white border border-slate-200 px-3.5 py-2 rounded-xl text-xs font-medium text-slate-700 shadow-sm"
+                >
+                  <Filter size={14} className="text-indigo-600" />
+                  <span>ตัวกรอง</span>
+                  {selectedCategories.length > 0 && (
+                    <span className="px-1.5 py-0.2 bg-indigo-100 text-indigo-700 font-bold rounded-full text-[10px]">
+                      {selectedCategories.length}
+                    </span>
+                  )}
                 </button>
 
-                <div className="relative group flex-1 sm:flex-none">
-                  <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="w-full sm:w-32 md:w-48 flex items-center justify-between bg-white border border-gray-200 hover:border-indigo-300 px-4 py-2.5 rounded-xl text-slate-700 font-medium transition-colors shadow-sm">
-                    <option value="latest">ล่าสุด</option>
-                    <option value="rateLow">เรทน้อย → มาก</option>
-                    <option value="rateHigh">เรทมาก → น้อย</option>
+                {/* Sort Dropdown */}
+                <div className="relative">
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="appearance-none bg-white border border-slate-200 rounded-xl pl-3.5 pr-8 py-2 text-xs font-medium text-slate-700 focus:outline-none focus:border-indigo-500 cursor-pointer shadow-sm"
+                  >
+                    <option value="latest">เรียงลำดับ: ล่าสุด</option>
+                    <option value="rateLow">เรท: น้อย → มาก</option>
+                    <option value="rateHigh">เรท: มาก → น้อย</option>
                   </select>
+                  <ChevronDown size={14} className="absolute right-2.5 top-3 text-slate-400 pointer-events-none" />
                 </div>
               </div>
             </div>
 
-            {/* ✅ 4. เพิ่ม UI จัดการสถานะ Loading, Error, และ Empty */}
-            {isLoading ? (
-              // Loading State (อาจจะแทนด้วย Skeleton Card ได้ในอนาคต)
-              <div className="text-center py-20 text-slate-600">กำลังโหลดข้อมูลฟรีแลนซ์...</div>
-            ) : error ? (
-              // Error State
-              <div className="bg-red-50 text-red-700 border border-red-200 rounded-3xl p-12 text-center">
-                <h3 className="text-2xl font-bold mb-2">เกิดข้อผิดพลาด</h3>
-                <p>{error}</p>
-              </div>
-            ) : displayFreelancers.length === 0 ? (
-              // Empty State
-              <div className="bg-white rounded-3xl border border-gray-100 p-12 text-center">
-                <User size={64} className="text-gray-300 mx-auto mb-4" />
-                <h3 className="text-2xl font-bold text-slate-800 mb-2">ไม่พบฟรีแลนซ์ที่ตรงกับตัวกรอง</h3>
-                <p className="text-slate-500 mb-6">ลองเปลี่ยนตัวกรองหรือล้างค่าตัวกรองเพื่อดูฟรีแลนซ์ทั้งหมด</p>
-                <button onClick={handleClearFilters} className="inline-flex items-center gap-2 bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-indigo-700 transition-colors">
-                  ล้างค่าตัวกรอง
-                </button>
-              </div>
-            ) : (
-              // Freelancer Grid
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                {/* ✅ เปลี่ยนมา Map displayFreelancers แทน */}
-                {displayFreelancers.map((freelancer) => (
-                  <FreelancerCard key={freelancer._id} freelancer={freelancer} />
+            {/* Active Tag Badges */}
+            {selectedCategories.length > 0 && (
+              <div className="flex flex-wrap items-center gap-1.5 mb-6">
+                <span className="text-xs text-slate-400 mr-1">กำลังเลือก:</span>
+                {selectedCategories.map((cat) => (
+                  <span
+                    key={cat}
+                    className="inline-flex items-center gap-1 bg-white border border-indigo-100 px-2.5 py-1 rounded-lg text-xs font-medium text-indigo-700 shadow-2xs"
+                  >
+                    {cat}
+                    <button onClick={() => toggleCategory(cat)} className="hover:text-indigo-900 ml-0.5">
+                      <X size={12} />
+                    </button>
+                  </span>
                 ))}
+                <button
+                  onClick={handleReset}
+                  className="text-xs text-slate-400 hover:text-slate-700 underline ml-2"
+                >
+                  ล้างตัวกรอง
+                </button>
               </div>
             )}
 
-            {/* Pagination / Load More */}
-            {/* <div className="mt-12 text-center">
-              <button className="px-10 py-3 bg-white border border-gray-200 text-slate-600 font-bold rounded-full hover:bg-indigo-600 hover:text-white transition-all shadow-lg hover:shadow-indigo-300/50 transform hover:scale-[1.01]">โหลดเพิ่มเติม</button>
-            </div> */}
+            {/* Dynamic Content: Skeleton, Error, Empty, or Cards */}
+            <div className="flex-1 flex flex-col justify-start">
+              {isLoading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div key={i} className="bg-white border border-slate-200/80 rounded-2xl p-5 animate-pulse space-y-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 bg-slate-200 rounded-full" />
+                        <div className="space-y-2 flex-1">
+                          <div className="h-4 bg-slate-200 rounded w-2/3" />
+                          <div className="h-3 bg-slate-200 rounded w-1/3" />
+                        </div>
+                      </div>
+                      <div className="h-14 bg-slate-100 rounded-xl" />
+                      <div className="h-4 bg-slate-200 rounded w-1/4 pt-2" />
+                    </div>
+                  ))}
+                </div>
+              ) : error ? (
+                <div className="flex-1 flex flex-col items-center justify-center bg-white border border-red-100 rounded-3xl p-10 text-center min-h-[460px]">
+                  <p className="text-sm font-medium text-red-600 mb-3">{error}</p>
+                  <button
+                    onClick={() => window.location.reload()}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold bg-red-600 text-white rounded-xl hover:bg-red-700 transition"
+                  >
+                    <RefreshCw size={13} /> ลองใหม่อีกครั้ง
+                  </button>
+                </div>
+              ) : filteredFreelancers.length === 0 ? (
+                /* Empty State: ขึงกล่องกว้างและสูงเต็มพื้นที่ ไม่ให้หน้าจอยุบ */
+                <div className="flex-1 flex flex-col items-center justify-center bg-white border border-slate-200 border-dashed rounded-3xl p-12 text-center min-h-[460px]">
+                  <div className="w-16 h-16 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mb-4">
+                    <User size={28} />
+                  </div>
+                  <h3 className="text-lg font-bold text-slate-800 mb-1">
+                    ไม่พบฟรีแลนซ์ที่ตรงกับเงื่อนไข
+                  </h3>
+                  <p className="text-sm text-slate-500 max-w-sm mb-6 leading-relaxed">
+                    ลองตรวจสอบคำค้นหา หรือล้างตัวกรองความเชี่ยวชาญเพื่อดูรายชื่อฟรีแลนซ์ทั้งหมด
+                  </p>
+                  <button
+                    onClick={handleReset}
+                    className="px-5 py-2.5 text-xs font-medium text-white bg-indigo-600 rounded-xl hover:bg-indigo-700 transition shadow-sm"
+                  >
+                    รีเซ็ตตัวกรองทั้งหมด
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                  {filteredFreelancers.map((freelancer) => (
+                    <FreelancerCard key={freelancer._id || freelancer.id} freelancer={freelancer} />
+                  ))}
+                </div>
+              )}
+            </div>
           </section>
         </div>
       </main>
+      <Footer />
+
+      {/* 3. Mobile Filter Drawer */}
+      {isMobileFilterOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden flex">
+          <div
+            className="fixed inset-0 bg-slate-950/50 backdrop-blur-xs transition-opacity"
+            onClick={() => setIsMobileFilterOpen(false)}
+          />
+          <div className="relative ml-auto w-full max-w-xs bg-white h-full shadow-2xl p-5 flex flex-col z-10 animate-in slide-in-from-right duration-200">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <span className="font-bold text-base text-slate-900">ตัวกรองทักษะ</span>
+              <button
+                onClick={() => setIsMobileFilterOpen(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto pt-3 space-y-1">
+              {FREELANCER_CATEGORIES.map((cat) => {
+                const active = selectedCategories.includes(cat)
+                return (
+                  <label
+                    key={cat}
+                    className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs cursor-pointer ${
+                      active ? "bg-indigo-50 text-indigo-900 font-semibold" : "text-slate-600 hover:bg-slate-50"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={active}
+                      onChange={() => toggleCategory(cat)}
+                      className="rounded border-slate-300 text-indigo-600 focus:ring-0"
+                    />
+                    <span className="truncate">{cat}</span>
+                  </label>
+                )
+              })}
+            </div>
+
+            <div className="pt-3 border-t border-slate-100 flex gap-2">
+              <button
+                onClick={handleReset}
+                className="flex-1 py-2.5 text-xs font-semibold text-slate-600 bg-slate-100 rounded-xl hover:bg-slate-200 transition"
+              >
+                ล้างค่า
+              </button>
+              <button
+                onClick={() => setIsMobileFilterOpen(false)}
+                className="flex-1 py-2.5 text-xs font-semibold text-white bg-indigo-600 rounded-xl hover:bg-indigo-700 transition"
+              >
+                แสดง ({filteredFreelancers.length})
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
-
-export default Main
