@@ -216,7 +216,7 @@ const App = () => {
   }
 
   return (
-    <div className="flex flex-1 flex-col min-h-screen bg-[#F8FAFC] font-['Prompt',_sans-serif] antialiased">
+    <div className="flex flex-1 flex-col min-h-screen bg-[#F8FAFC] font-['Prompt',_sans-serif] antialiased overflow-hidden">
       <HeroSection
         searchKeyword={searchKeyword} setSearchKeyword={setSearchKeyword}
         selectedType={selectedType} setSelectedType={setSelectedType}
@@ -243,7 +243,7 @@ const App = () => {
               <option value="rateLow">งบประมาณ: น้อยไปมาก</option>
               <option value="rateHigh">งบประมาณ: มากไปน้อย</option>
             </select>
-            <button onClick={() => setIsPostModalOpen(true)} className="w-full sm:w-auto shrink-0 bg-slate-900 text-white hover:bg-slate-800 px-5 py-2.5 rounded-xl text-sm font-medium transition shadow-xs">
+            <button onClick={() => setIsPostModalOpen(true)} className="w-auto shrink-0 bg-slate-900 text-white hover:bg-slate-800 px-5 py-2.5 rounded-xl text-sm font-medium transition shadow-xs">
               ลงประกาศงาน
             </button>
           </div>

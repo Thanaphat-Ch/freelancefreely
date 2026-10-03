@@ -11,7 +11,7 @@ const jobSchema = new mongoose.Schema(
     // tags: [String], 
     rate: { type: String, required: true },
     deadline: Date,
-    endPost: { type: Date, required: true }, //สิ้นสุดประกาศ
+    endPost: { type: Date, required: true },
 
     status: { type: String, enum: ["offer", "rejected", "open", "in_progress", "completed"], default: "open" },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true,  },
