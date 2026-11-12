@@ -67,7 +67,7 @@ exports.getFreelancerRatingById = async (req, res) => {
           avgValue: { $avg: "$ratingValue" }       // เฉลี่ยความคุ้มค่า
         },
       },
-      // (Optional) จัดรูปแบบทศนิยมให้สวยงาม (1 ตำแหน่ง)
+      // จัดรูปแบบทศนิยมให้สวยงาม 1 ตำแหน่ง
       {
         $project: {
           totalReviews: 1,
@@ -101,7 +101,7 @@ exports.getMyReviews = async (req, res) => {
   try {
     const reviews = await Review.find({ freelancer: req.user.id })
       .select("reviewer rating comment createdAt") // เลือกเฉพาะ: คนรีวิว, คะแนนรวม, คอมเมนต์, วันที่
-      .populate("reviewer", "name profileImage") // (แนะนำ) ดึงชื่อและรูปคนรีวิวมาด้วย เพื่อไปแสดงผลหน้าเว็บ
+      .populate("reviewer", "name profileImage") // ดึงชื่อและรูปคนรีวิวมาด้วย เพื่อไปแสดงผลหน้าเว็บ
       .sort({ createdAt: -1 }) // เรียงจากใหม่สุดไปเก่าสุด
 
     res.json(reviews)

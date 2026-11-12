@@ -83,7 +83,7 @@ exports.updateProfile = async (req, res) => {
     // Normalize input เป็น Array
     const keepList = existingBanners ? (Array.isArray(existingBanners) ? existingBanners : [existingBanners]) : []
 
-    // 1. ลบรูปที่ผู้ใช้คัดออก (เทียบจาก key หรือ url)
+    // ลบรูปที่ผู้ใช้คัดออก (เทียบจาก key หรือ url)
     const bannersToDelete = profile.banners.filter((b) => {
       const currentIdentifier = b.key || b.url
       return !keepList.includes(currentIdentifier)
@@ -99,7 +99,7 @@ exports.updateProfile = async (req, res) => {
       return keepList.includes(currentIdentifier)
     })
 
-    // 2. อัปโหลดรูปใหม่เข้า R2
+    // อัปโหลดรูปใหม่เข้า R2
     if (req.files && req.files.length > 0) {
       for (const [index, file] of req.files.entries()) {
         const ext = path.extname(file.originalname).toLowerCase() || ".jpg"

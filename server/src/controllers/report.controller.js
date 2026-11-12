@@ -48,12 +48,12 @@ exports.getAllReports = async (req, res) => {
     });
     if (expiredReports.length > 0) {   
       await Promise.all(expiredReports.map(async (report) => {
-         // A. เปลี่ยนสถานะ
+         // เปลี่ยนสถานะ
          report.status = 'resolved';
          report.adminNote = (report.adminNote || '') + '\n[System]: ครบกำหนด 14 วัน (อนุมัติอัตโนมัติ)';
          await report.save();
 
-         // B. ลงโทษ User (Copy Logic เดิมมา)
+         // ลงโทษ User
          const targetUser = await User.findById(report.targetUser);
          if (targetUser) {
             targetUser.violationCount = (targetUser.violationCount || 0) + 1;

@@ -53,17 +53,17 @@ function isStrongPassword(password) {
   return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/.test(password)
 }
 function isAge18Plus(birthDate) {
-    if (!birthDate) return false
-    const today = new Date()
-    const birth = new Date(birthDate)
-    let age = today.getFullYear() - birth.getFullYear()
-    const m = today.getMonth() - birth.getMonth()
+  if (!birthDate) return false
+  const today = new Date()
+  const birth = new Date(birthDate)
+  let age = today.getFullYear() - birth.getFullYear()
+  const m = today.getMonth() - birth.getMonth()
 
-    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
-      age--
-    }
-    return age >= 18
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+    age--
   }
+  return age >= 18
+}
 
 // POST /api/auth/login
 exports.login = async (req, res, next) => {
@@ -96,74 +96,61 @@ exports.login = async (req, res, next) => {
   })(req, res, next)
 }
 
-
 exports.verifyIdentity = async (req, res) => {
   try {
-    const { email, idCard, phone, birthDate } = req.body;
-    const normalizeEmail = email ? email.toLowerCase().trim() : "";
-    // 1. หา User จาก Email
-    const user = await User.findOne({ normalizeEmail });
+    const { email, idCard, phone, birthDate } = req.body
+    const normalizeEmail = email ? email.toLowerCase().trim() : ""
+    // หา User จาก Email
+    const user = await User.findOne({ normalizeEmail })
     if (!user) {
-      // เพื่อความปลอดภัย อาจจะตอบ Error กลางๆ แต่ถ้าระบบภายใน บอกตรงๆ ได้เลย
-      return res.status(404).json({ message: "ไม่พบอีเมลนี้ในระบบ" });
+      return res.status(404).json({ message: "ไม่พบอีเมลนี้ในระบบ" })
     }
 
-    // 2. แปลงวันที่ให้เป็น Format YYYY-MM-DD เพื่อเทียบกัน (ตัดเรื่องเวลาออก)
-    // หมายเหตุ: ต้องมั่นใจว่า Database เก็บ Date ถูกต้อง
-    const dbBirthDate = new Date(user.birthDate).toISOString().split('T')[0];
-    const inputBirthDate = new Date(birthDate).toISOString().split('T')[0];
+    // แปลงวันที่ให้เป็น Format YYYY-MM-DD เพื่อเทียบกัน (ตัดเรื่องเวลาออก)
+    const dbBirthDate = new Date(user.birthDate).toISOString().split("T")[0]
+    const inputBirthDate = new Date(birthDate).toISOString().split("T")[0]
 
-    // 3. เทียบข้อมูล (ต้องตรงทุกตัว)
-    const isMatch = 
-      user.idCard === idCard && 
-      user.phone === phone && 
-      dbBirthDate === inputBirthDate;
+    // เทียบข้อมูล (ต้องตรงทุกตัว)
+    const isMatch = user.idCard === idCard && user.phone === phone && dbBirthDate === inputBirthDate
 
     if (!isMatch) {
-      return res.status(400).json({ message: "ข้อมูลยืนยันตัวตนไม่ถูกต้อง" });
+      return res.status(400).json({ message: "ข้อมูลยืนยันตัวตนไม่ถูกต้อง" })
     }
 
-    // 4. ถ้าถูก สร้าง Token พิเศษ (อายุสั้นๆ เช่น 10 นาที) ส่งกลับไปให้หน้าเว็บ
-    const resetToken = jwt.sign(
-      { id: user._id, role: user.role, type: "RESET_FLOW" }, 
-      process.env.JWT_SECRET, 
-      { expiresIn: "10m" }
-    );
+    //  ถ้าถูกสร้าง Token พิเศษ (อายุสั้นๆ เช่น 10 นาที) ส่งกลับไปให้หน้าเว็บ
+    const resetToken = jwt.sign({ id: user._id, role: user.role, type: "RESET_FLOW" }, process.env.JWT_SECRET, { expiresIn: "10m" })
 
-    res.json({ 
-      message: "ยืนยันตัวตนสำเร็จ", 
-      resetToken // ส่งกุญแจนี้ไปให้ Frontend เก็บไว้
-    });
-
+    res.json({
+      message: "ยืนยันตัวตนสำเร็จ",
+      resetToken, // ส่งกุญแจไปให้ Frontend เก็บไว้
+    })
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "เกิดข้อผิดพลาดจากเซิร์ฟเวอร์" });
+    console.error(err)
+    res.status(500).json({ message: "เกิดข้อผิดพลาดจากเซิร์ฟเวอร์" })
   }
-};
-// 2. เปลี่ยนรหัสผ่าน (Reset Password Now)
+}
+// เปลี่ยนรหัสผ่าน
 exports.resetPasswordNow = async (req, res) => {
   try {
-    const { token, newPassword } = req.body;
-
+    const { token, newPassword } = req.body
     // Verify Token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    
+    const decoded = jwt.verify(token, process.env.JWT_SECRET)
+
     // ตรวจสอบว่าเป็น Token สำหรับเปลี่ยนรหัสจริงหรือไม่
     if (decoded.type !== "RESET_FLOW") {
-      return res.status(400).json({ message: "Token ไม่ถูกต้อง" });
+      return res.status(400).json({ message: "Token ไม่ถูกต้อง" })
     }
 
     // Hash รหัสผ่านใหม่ (ตอนนี้ใช้ได้แล้วเพราะ import bcrypt มาแล้ว)
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(newPassword, salt);
+    const salt = await bcrypt.genSalt(10)
+    const hashedPassword = await bcrypt.hash(newPassword, salt)
 
     // อัปเดตลงฐานข้อมูล
-    await User.findByIdAndUpdate(decoded.id, { password: hashedPassword });
+    await User.findByIdAndUpdate(decoded.id, { password: hashedPassword })
 
-    res.json({ message: "เปลี่ยนรหัสผ่านสำเร็จแล้ว" });
-
+    res.json({ message: "เปลี่ยนรหัสผ่านสำเร็จแล้ว" })
   } catch (err) {
-    console.error("Reset Password Error:", err);
-    res.status(400).json({ message: "หมดเวลาดำเนินการ หรือข้อมูลผิดพลาด กรุณาเริ่มใหม่" });
+    console.error("Reset Password Error:", err)
+    res.status(400).json({ message: "หมดเวลาดำเนินการ หรือข้อมูลผิดพลาด กรุณาเริ่มใหม่" })
   }
-};
+}
