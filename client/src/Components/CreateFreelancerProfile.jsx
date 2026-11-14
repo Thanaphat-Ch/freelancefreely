@@ -26,10 +26,7 @@ const FreelancerProfileModal = ({ onClose, onSuccess, initialData = null, isEdit
     if (!rawFiles.length) return
 
     const totalImages = existingBanners.length + newBannerFiles.length + rawFiles.length
-    if (totalImages > 5) {
-      Swal.fire("เกิดข้อผิดพลาด!", "รวมแล้วอัปโหลดได้สูงสุด 5 รูป", "error")
-      return
-    }
+    if (totalImages > 5) return Swal.fire("เกิดข้อผิดพลาด!", "รวมแล้วอัปโหลดได้สูงสุด 5 รูป", "error")
 
     const resizedFiles = await Promise.all(rawFiles.map((file) => resizeImage(file, 1280, 720, 0.8)))
     const previewUrls = resizedFiles.map((file) => URL.createObjectURL(file))
@@ -79,7 +76,6 @@ const FreelancerProfileModal = ({ onClose, onSuccess, initialData = null, isEdit
           headers: { "Content-Type": "multipart/form-data" },
         })
       }
-
       onSuccess?.()
       onClose()
     } catch (err) {

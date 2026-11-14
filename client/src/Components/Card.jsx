@@ -2,13 +2,14 @@ import React, { useEffect, useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { Star, DollarSign, Clock, User, Calendar, Briefcase, MessageCircle } from "lucide-react"
 import api from "../api/axios"
-import { FormatDate, formatMoney, formatPrice } from "../utils/Format"
+import { FormatDate, formatPrice } from "../utils/Format"
 import { Edit, Trash2, Eye, EyeOff } from "lucide-react"
 import Swal from "sweetalert2"
 import { useStartChat } from "../hooks/useStartChat"
 
 
 export const JobCard = ({ job }) => {
+  
   const formatDate = (dateString) => {
     if (!dateString) return "-"
     return new Date(dateString).toLocaleDateString("th-TH", {
@@ -18,7 +19,6 @@ export const JobCard = ({ job }) => {
     })
   }
 
-  // ปรับ Status จากป้าย (Pill) ก้อนใหญ่ๆ เป็นจุดสี (Dot) มินิมอลเรียบหรู
   const getStatusDisplay = (status) => {
     const config = {
       in_progress: { color: "bg-amber-400", text: "กำลังทำ" },

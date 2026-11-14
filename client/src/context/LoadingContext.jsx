@@ -8,8 +8,6 @@ const LoadingContext = createContext()
 
 export const LoadingProvider = ({ children }) => {
   const [loading, setLoading] = useState(false)
-
-  // 🔥 จุดสำคัญที่สุด
   useEffect(() => {
     loadingStore.set(setLoading)
   }, [])

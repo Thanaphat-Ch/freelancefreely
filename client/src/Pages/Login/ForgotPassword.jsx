@@ -1,18 +1,15 @@
 import React, { useState } from "react"
 import { Mail, ArrowLeft, CheckCircle, CreditCard, Phone, Calendar, Lock, KeyRound, ChevronRight } from "lucide-react"
-import { Link, useNavigate } from "react-router-dom"
-import Input from "../../Components/Input" // ตรวจสอบ path ให้ถูกต้อง
+import { Link } from "react-router-dom"
+import Input from "../../Components/Input"
 import api from "../../api/axios"
 
 const ForgotPassword = () => {
-  const navigate = useNavigate()
   
-  // Step Control: 1=Email, 2=Verify Identity, 3=Reset Password, 4=Success
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
 
-  // --- Data States ---
   const [email, setEmail] = useState("")
   
   const [verifyData, setVerifyData] = useState({
@@ -26,10 +23,8 @@ const ForgotPassword = () => {
     confirmPassword: ""
   })
   
-  // Token ที่ได้จาก Backend เมื่อ Verify ผ่าน
   const [resetToken, setResetToken] = useState(null)
 
-  // --- Formatters (ใส่ขีดเพื่อความสวยงาม) ---
   const formatIdCard = (value) => {
     const numbers = value.replace(/\D/g, "").slice(0, 13)
     if (numbers.length <= 1) return numbers
@@ -46,23 +41,17 @@ const ForgotPassword = () => {
     return `${numbers.slice(0, 3)}-${numbers.slice(3, 6)}-${numbers.slice(6)}`
   }
 
-  // --- Handlers ---
-
-  // STEP 1: Submit Email
   const handleEmailSubmit = (e) => {
     e.preventDefault()
     if (!email) return setError("กรุณากรอกอีเมล")
-    // ยังไม่ยิง API เช็ค Step 2 เลย (หรือจะยิงเช็คก่อนก็ได้ว่ามีเมลไหม แต่ flow นี้คือเช็คทีเดียวตอน step 2)
     setError("")
     setStep(2)
   }
 
-  // STEP 2: Verify Identity
   const handleVerifySubmit = async (e) => {
     e.preventDefault()
     const { idCard, phone, birthDate } = verifyData
 
-    // ล้าง format (เอาขีดออก) เพื่อเช็คความยาวและส่ง API
     const rawIdCard = idCard.replace(/-/g, "")
     const rawPhone = phone.replace(/-/g, "")
 
@@ -86,7 +75,6 @@ const ForgotPassword = () => {
         birthDate
       })
 
-      // Backend ส่ง Token กลับมา เก็บไว้ใช้ Step หน้า
       setResetToken(res.data.resetToken)
       setStep(3)
 
@@ -98,7 +86,6 @@ const ForgotPassword = () => {
     }
   }
 
-  // STEP 3: Reset Password
   const handleResetPassword = async (e) => {
     e.preventDefault()
     
@@ -108,13 +95,11 @@ const ForgotPassword = () => {
     if (passwords.newPassword.length < 6) {
       return setError("รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร")
     }
-    // เพิ่ม Regex เช็คความยากรหัสผ่านได้ตรงนี้ถ้าต้องการ
 
     try {
       setLoading(true)
       setError("")
 
-      // ยิง API: /auth/reset-password-flow (ตาม router ที่คุณกำหนด)
       await api.post("/auth/reset-password-flow", {
         token: resetToken,
         newPassword: passwords.newPassword
@@ -267,7 +252,7 @@ const ForgotPassword = () => {
               type="submit"
               disabled={loading}
               className="w-full mt-4 py-3.5 rounded-xl font-bold text-white
-                bg-gradient-to-r from-emerald-500 to-teal-600
+                bg-linear-to-r from-emerald-500 to-teal-600
                 hover:from-emerald-600 hover:to-teal-700
                 disabled:opacity-70 shadow-lg shadow-emerald-200 transition-all"
             >
