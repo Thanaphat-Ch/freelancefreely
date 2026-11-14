@@ -33,16 +33,10 @@ const Settings = () => {
     { id: "account", label: "บัญชี", icon: User }
   ];
 
-  const getAuthHeader = () => {
-    const token = localStorage.getItem("token"); 
-    return { headers: { Authorization: `Bearer ${token}` } };
-  };
-
-  // 1. Fetch User Data เมื่อโหลดหน้าเว็บ
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await api.get("/users/me", getAuthHeader()); 
+        const res = await api.get("/users/me"); 
 
         setUserData({
           name: res.data.name || "",
@@ -58,12 +52,10 @@ const Settings = () => {
     fetchUser();
   }, []);
 
-  // 2. Handle Update Profile
   const handleUpdateProfile = async () => {
     setLoading(true);
     try {
-      // ส่งข้อมูลไป update
-      await api.put("/users", userData, getAuthHeader());
+      await api.put("/users", userData);
       Swal.fire("บันทึกเรียบร้อบ", "ข้อมูลของคุณถูกบันทึกเรียบร้อย", "success")
     } catch (err) {
       console.error(err);
@@ -73,7 +65,6 @@ const Settings = () => {
     }
   };
 
-  // 3. Handle Change Password
   const handleChangePassword = async () => {
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       Swal.fire("เกิดข้อผิดพลาด!", "รหัสผ่านใหม่ไม่ตรงกัน", "error")
@@ -89,7 +80,7 @@ const Settings = () => {
       await api.put("/users/change-password", {
         currentPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword
-      }, getAuthHeader());
+      });
       Swal.fire("success", "เปลี่ยนรหัสผ่านสำเร็จ", "success")
       setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
     } catch (err) {
@@ -115,17 +106,15 @@ const Settings = () => {
     if (result.isConfirmed) {
         setLoading(true);
         try {
-            await api.delete("/users", getAuthHeader());
+            await api.delete("/users");
             await Swal.fire(
                 'ลบเรียบร้อย!',
                 'บัญชีของคุณถูกลบออกจากระบบแล้ว',
                 'success'
             );
-            localStorage.removeItem("token");
             localStorage.removeItem("user");
             localStorage.removeItem("profilePic");
             navigate("/login"); 
-
         } catch (err) {
             console.error(err);
             Swal.fire(
@@ -141,11 +130,9 @@ const Settings = () => {
 
   return (
     <div className="flex flex-1 min-h-screen bg-slate-50">
-      <main className="max-w-7xl mx-auto px-4 py-10 w-full">
+      <div className="max-w-7xl mx-auto px-4 py-10 w-full">
         <BackButton />
-
-        {/* Header */}
-        <div className="bg-white rounded-3xl border border-gray-100 p-8 shadow-sm mb-8">
+        <header className="bg-white rounded-3xl border border-gray-100 p-8 shadow-sm mb-8">
           <div className="flex items-center gap-3 mb-2">
             <SettingsIcon size={28} className="text-indigo-600" />
             <h1 className="text-3xl font-extrabold text-slate-800">ตั้งค่าบัญชี</h1>
@@ -153,11 +140,10 @@ const Settings = () => {
           <p className="text-slate-500">
             จัดการข้อมูลบัญชี การแจ้งเตือน และรายการโปรดของคุณ
           </p>
-        </div>
+        </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Sidebar Tabs */}
-          <div className="lg:col-span-1">
+        <main className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          <aside className="lg:col-span-1">
             <div className="bg-white rounded-3xl border border-gray-100 p-4 shadow-sm sticky top-24">
               <nav className="space-y-2">
                 {tabs.map((tab) => {
@@ -179,12 +165,9 @@ const Settings = () => {
                 })}
               </nav>
             </div>
-          </div>
+          </aside>
 
-          {/* Content Area */}
-          <div className="lg:col-span-3">
-            
-            {/* --- Security Tab --- */}
+          <main className="lg:col-span-3">
             {activeTab === "security" && (
               <div className="bg-white rounded-3xl border border-gray-100 p-8 shadow-sm">
                 <div className="flex items-center gap-3 mb-6">
@@ -317,9 +300,9 @@ const Settings = () => {
                 </div>
               </div>
             )}
-          </div>
-        </div>
-      </main>
+          </main>
+        </main>
+      </div>
     </div>
   );
 };
