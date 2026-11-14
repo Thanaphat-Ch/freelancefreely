@@ -4,22 +4,18 @@ import api from "../../api/axios"
 import { useStartChat } from "../../hooks/useStartChat"
 import Swal from "sweetalert2"
 
-// ==============================
-// 1. Modal แสดงรายละเอียดผู้ใช้
-// ==============================
 const UserDetailModal = ({ user, onClose }) => {
   if (!user) return null
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={onClose}>
       <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200" onClick={(e) => e.stopPropagation()}>
-        {/* Header */}
-        <div className="bg-slate-50 px-6 py-4 border-b flex justify-between items-center">
+        <header className="bg-slate-50 px-6 py-4 border-b flex justify-between items-center">
           <h3 className="font-bold text-lg text-slate-800">ข้อมูลผู้ใช้งาน</h3>
           <button onClick={onClose} className="p-1 hover:bg-slate-200 rounded-full transition-colors">
             <X size={20} className="text-slate-500" />
           </button>
-        </div>
+        </header>
 
         {/* Content */}
         <div className="p-6">
@@ -77,18 +73,13 @@ const UserDetailModal = ({ user, onClose }) => {
   )
 }
 
-// ==============================
-// 2. Main Component
-// ==============================
 const AdminUsers = () => {
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
-  const [selectedUser, setSelectedUser] = useState(null) // State สำหรับ Modal
-
+  const [selectedUser, setSelectedUser] = useState(null)
   const { startChat } = useStartChat()
 
-  // Fetch Users
   useEffect(() => {
     fetchUsers()
   }, [])
@@ -96,7 +87,7 @@ const AdminUsers = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true)
-      const res = await api.get("/users") // เรียก endpoint ที่สร้างไว้
+      const res = await api.get("/users")
       setUsers(res.data)
     } catch (err) {
       console.error("Failed to fetch users", err)
@@ -107,15 +98,12 @@ const AdminUsers = () => {
 
   const handleToggleBan = async (id, currentBanStatus, name) => {
     const newStatus = !currentBanStatus
-    const action = newStatus ? "ระงับการใช้งาน (แบน)" : "ปลดแบน" // ข้อความสำหรับ Confirm
-    // if (!window.confirm(`คุณต้องการ "${action}" ผู้ใช้ ${name} ใช่หรือไม่?`)) return
+    const action = newStatus ? "ระงับการใช้งาน (แบน)" : "ปลดแบน"
     if (!(await Swal.fire({ title:"ยืนยัน?", text: `คุณต้องการ "${action}" ผู้ใช้ ${name} ใช่หรือไม่?`, icon: "question", showCancelButton:true, confirmButtonText: "ยืนยัน", cancelButtonText: "ยกเลิก"})).isConfirmed) return
 
     try {
-      // ส่งค่า newStatus ไปให้ Backend ด้วย
       const res = await api.patch(`/users/${id}/ban`, { status: newStatus })
 
-      // อัปเดตข้อมูลในตาราง
       setUsers(users.map((u) => (u._id === id ? { ...u, isBanned: res.data.data.isBanned } : u)))
 
       // อัปเดตข้อมูลใน Modal (ถ้าเปิดอยู่)
@@ -127,7 +115,7 @@ const AdminUsers = () => {
       console.error(err)
     }
   }
-  // Filter Search
+
   const filteredUsers = users.filter((user) => user.name?.toLowerCase().includes(searchTerm.toLowerCase()) || user.email?.toLowerCase().includes(searchTerm.toLowerCase()))
 
   if (loading)
@@ -196,7 +184,7 @@ const AdminUsers = () => {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex justify-end gap-2">
-                        {/* ปุ่มดูรายละเอียด */}
+    
                         {/* <button onClick={() => setSelectedUser(user)} className="p-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors" title="ดูรายละเอียด">
                           <Eye size={18} />
                         </button> */}
@@ -204,7 +192,6 @@ const AdminUsers = () => {
                           <MessageCircle size={18} />
                         </button>
 
-                        {/* ปุ่มแบน */}
                         <button
                           onClick={() => handleToggleBan(user._id, user.isBanned, user.name)}
                           className={`p-2 rounded-lg transition-colors ${user.isBanned ? "text-green-600 hover:bg-green-50 hover:text-green-700" : "text-red-400 hover:bg-red-50 hover:text-red-600"}`}
@@ -222,7 +209,6 @@ const AdminUsers = () => {
         </div>
       </div>
 
-      {/* เรียกใช้ Modal */}
       <UserDetailModal user={selectedUser} onClose={() => setSelectedUser(null)} />
     </div>
   )

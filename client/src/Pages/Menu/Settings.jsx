@@ -33,9 +33,8 @@ const Settings = () => {
     { id: "account", label: "บัญชี", icon: User }
   ];
 
-  // Helper สำหรับดึง Token
   const getAuthHeader = () => {
-    const token = localStorage.getItem("token"); // หรือ key ที่คุณเก็บ token ไว้
+    const token = localStorage.getItem("token"); 
     return { headers: { Authorization: `Bearer ${token}` } };
   };
 
