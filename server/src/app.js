@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const dbMiddleware = require("./middlewares/dbMiddleware");
 const passport = require("./config/passport");
+const cookieParser = require("cookie-parser")
 
 const app = express();
 
@@ -19,19 +20,18 @@ const corsOptions = {
       callback(new Error("Not allowed by CORS"));
     }
   },
-  credentials: true, // ตั้งเป็น true หาก Frontend มีการส่ง Cookies หรือ Authorization Header
+  credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"]
 };
 
-// middleware
 app.use(cors(corsOptions));
 app.use(express.json());
+app.use(cookieParser());
 app.use(dbMiddleware)
 app.use(passport.initialize())
 
 
-// routes
 app.get("/", (req, res) => {
     res.json({ message: "API is running" });
 });

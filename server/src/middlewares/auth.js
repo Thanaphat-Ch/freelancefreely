@@ -2,7 +2,7 @@ const jwt = require("jsonwebtoken")
 const User = require("../models/User")
 
 module.exports = async (req, res, next) => {
-  const authHeader = req.headers.authorization
+  const authHeader = req.cookies?.token
   if (!authHeader) {
     return res.status(401).json({ message: "No token" })
   }

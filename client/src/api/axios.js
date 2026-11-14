@@ -10,6 +10,7 @@ const baseURL = import.meta.env.MODE === "production"
 const api = axios.create({
   baseURL: baseURL,
   timeout: 10000,
+  withCredentials: true,
 })
 
 let requestCount = 0
@@ -18,11 +19,6 @@ api.interceptors.request.use(
   (config) => {
     requestCount++
     loadingStore.show()
-
-    const token = localStorage.getItem("token")
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
-    }
     return config
   },
   (error) => Promise.reject(error)
@@ -67,9 +63,9 @@ api.interceptors.response.use(
             confirmButtonText: 'ไปหน้าล็อกอิน',
             allowOutsideClick: false // บังคับกดปุ่ม
         })
-        
-        localStorage.removeItem("token")
-        localStorage.removeItem("user") // ลบ user data ด้วย (ถ้ามี)
+
+        localStorage.removeItem("user")
+        localStorage.removeItem("profilePic")
         window.location.href = "/login"
       }
     }
