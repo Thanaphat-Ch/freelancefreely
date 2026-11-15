@@ -2,13 +2,8 @@ import axios from "axios"
 import Swal from "sweetalert2" 
 import { loadingStore } from "../stores/loadingstore"
 
-const baseURL = import.meta.env.MODE === "production" 
-  ? import.meta.env.VITE_URL_API 
-  // : "http://localhost:5000/api"
-  : import.meta.env.VITE_URL_API
-
 const api = axios.create({
-  baseURL: baseURL,
+  baseURL: import.meta.env.VITE_URL_API,
   timeout: 10000,
   withCredentials: true,
 })
