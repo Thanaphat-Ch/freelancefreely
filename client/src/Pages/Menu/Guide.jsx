@@ -14,7 +14,7 @@ import {
   Zap,
   Headphones,
   Lock,
-  Home, // เพิ่มไอคอน Home
+  Home,
 } from "lucide-react"
 import { Link } from "react-router-dom"
 import { useStartChat } from "../../hooks/useStartChat"

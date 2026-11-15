@@ -124,14 +124,7 @@ const Profile = () => {
         formData.append("removeResume", "true")
       }
 
-      const res = await api.put(
-        "/users",
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        },
-        { timeout: 60000 },
-      )
+      const res = await api.put("/users", formData, { headers: { "Content-Type": "multipart/form-data" },},{ timeout: 60000 },)
 
       setProfileData(res.data)
       setOriginalData(res.data)
