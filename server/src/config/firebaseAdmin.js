@@ -1,10 +1,8 @@
 const admin = require("firebase-admin");
 
-// เช็คว่ามีตัวแปร Environment ไหม (บน Vercel จะมี, แต่ Local อาจจะไม่มี)
 let serviceAccount;
 
 if (process.env.FIREBASE_ADMIN_CONFIG) {
-  // กรณีอยู่บน Vercel: แปลง String กลับเป็น Object
   serviceAccount = JSON.parse(process.env.FIREBASE_ADMIN_CONFIG);
 } else {
   try {
