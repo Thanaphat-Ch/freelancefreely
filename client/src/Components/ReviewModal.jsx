@@ -88,7 +88,6 @@ const ReviewModal = ({ jobId, freelancerId, onClose, onSuccess }) => {
 
         {/* Content */}
         <div className="p-5">
-          {/* Grid Layout: 2 Columns บนหน้าจอส่วนใหญ่ (ใช้ min-[400px] เพื่อกันจอเล็กจิ๋วแตก) */}
           <div className="grid grid-cols-1 min-[400px]:grid-cols-2 gap-x-4 gap-y-4 mb-5">
             {ratingCategories.map((cat) => (
               <div 
@@ -102,7 +101,7 @@ const ReviewModal = ({ jobId, freelancerId, onClose, onSuccess }) => {
                   {[1, 2, 3, 4, 5].map((star) => (
                     <StarIcon
                       key={star}
-                      size="w-5 h-5 sm:w-6 sm:h-6" // มือถือเล็ก=w-5, จอใหญ่=w-6
+                      size="w-5 h-5 sm:w-6 sm:h-6" 
                       filled={star <= ratings[cat.key]}
                       onClick={() => handleRatingChange(cat.key, star)}
                     />
@@ -123,7 +122,6 @@ const ReviewModal = ({ jobId, freelancerId, onClose, onSuccess }) => {
             />
           </div>
 
-          {/* Buttons */}
           <div className="flex gap-3">
             <button
               onClick={onClose}
