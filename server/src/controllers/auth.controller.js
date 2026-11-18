@@ -72,12 +72,7 @@ exports.login = async (req, res, next) => {
   passport.authenticate("local", { session: false }, (err, user, info) => {
     if (err) return next(err)
     if (!user) return res.status(401).json({ code: "INVALID_CREDENTIALS", message: info?.message || "Login failed" })
-    if (user.isBanned) {
-      return res.status(403).json({
-        code: "ACCOUNT_BANNED",
-        message: "บัญชีของคุณถูกระงับการใช้งาน กรุณาติดต่อผู้ดูแลระบบ",
-      })
-    }
+    if (user.isBanned) return res.status(403).json({ code: "ACCOUNT_BANNED", message: "บัญชีของคุณถูกระงับการใช้งาน กรุณาติดต่อผู้ดูแลระบบ", })
 
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "1d" })
     res.cookie("token", token, {
