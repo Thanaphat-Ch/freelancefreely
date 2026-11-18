@@ -1,5 +1,5 @@
 import axios from "axios"
-import Swal from "sweetalert2" 
+import Swal from "sweetalert2"
 import { loadingStore } from "../stores/loadingstore"
 
 const api = axios.create({
@@ -16,7 +16,7 @@ api.interceptors.request.use(
     loadingStore.show()
     return config
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 )
 
 api.interceptors.response.use(
@@ -25,17 +25,16 @@ api.interceptors.response.use(
     if (requestCount === 0) loadingStore.hide()
     return response
   },
-  async (error) => { 
+  async (error) => {
     requestCount--
     if (requestCount === 0) loadingStore.hide()
 
-
     if (!error.response) {
       Swal.fire({
-        icon: 'error',
-        title: 'เกิดข้อผิดพลาด',
-        text: 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้',
-        confirmButtonText: 'ตกลง'
+        icon: "error",
+        title: "เกิดข้อผิดพลาด",
+        text: "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้",
+        confirmButtonText: "ตกลง",
       })
       return Promise.reject(error)
     }
@@ -47,16 +46,14 @@ api.interceptors.response.use(
       const isLoginApi = error.config?.url?.includes("/login")
 
       if (isLoginApi) {
-
         console.warn(data.message || "Login failed")
       } else {
-
         await Swal.fire({
-            icon: 'warning',
-            title: 'Session หมดอายุ',
-            text: 'กรุณาเข้าสู่ระบบใหม่',
-            confirmButtonText: 'ไปหน้าล็อกอิน',
-            allowOutsideClick: false // บังคับกดปุ่ม
+          icon: "warning",
+          title: "Session หมดอายุ",
+          text: "กรุณาเข้าสู่ระบบใหม่",
+          confirmButtonText: "ไปหน้าล็อกอิน",
+          allowOutsideClick: false, // บังคับกดปุ่ม
         })
 
         localStorage.removeItem("user")
@@ -67,10 +64,10 @@ api.interceptors.response.use(
 
     if (status === 403) {
       Swal.fire({
-        icon: 'error',
-        title: 'ไม่มีสิทธิ์เข้าถึง',
-        text: 'คุณไม่มีสิทธิ์เข้าถึงข้อมูลในส่วนนี้',
-        confirmButtonText: 'ตกลง'
+        icon: "error",
+        title: "ไม่มีสิทธิ์เข้าถึง",
+        text: "คุณไม่มีสิทธิ์เข้าถึงข้อมูลในส่วนนี้",
+        confirmButtonText: "ตกลง",
       })
     }
 
@@ -80,10 +77,10 @@ api.interceptors.response.use(
 
     if (status >= 500) {
       Swal.fire({
-        icon: 'error',
-        title: 'Server Error',
-        text: 'ระบบมีปัญหา กรุณาลองใหม่ภายหลัง',
-        confirmButtonText: 'ตกลง'
+        icon: "error",
+        title: "Server Error",
+        text: "ระบบมีปัญหา กรุณาลองใหม่ภายหลัง",
+        confirmButtonText: "ตกลง",
       })
     }
 
@@ -92,7 +89,7 @@ api.interceptors.response.use(
     }
 
     return Promise.reject(error)
-  }
+  },
 )
 
 export default api
