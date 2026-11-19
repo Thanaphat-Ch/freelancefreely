@@ -38,7 +38,6 @@ export default function Main() {
   const [error, setError] = useState(null)
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false)
 
-  // Fetch ข้อมูล
   useEffect(() => {
     let isMounted = true
     const fetchData = async () => {
@@ -97,18 +96,18 @@ export default function Main() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-slate-800 flex flex-1 flex-col font-['Prompt',sans-serif] antialiased">
-      <section className="relative min-h-[92vh] flex flex-col justify-center items-center bg-[#070D18] text-white px-4 py-16 overflow-hidden border-b border-slate-800">
+      <section aria-label="ค้นหาฟรีแลนซ์" className="relative min-h-[92vh] flex flex-col justify-center items-center bg-[#070D18] text-white px-4 py-16 overflow-hidden border-b border-slate-800">
         <div className="absolute inset-0 opacity-25 bg-[radial-gradient(#38BDF8_1px,transparent_1px)] background-size-[24px_24px] pointer-events-none" />
         <div className="absolute top-1/4 -left-32 w-96 h-96 bg-indigo-600/20 rounded-full blur-[140px] pointer-events-none" />
         <div className="absolute bottom-10 -right-32 w-96 h-96 bg-cyan-500/15 rounded-full blur-[140px] pointer-events-none" />
-        <div className="relative max-w-4xl w-full mx-auto text-center z-10 my-auto">
+        <header className="relative max-w-4xl w-full mx-auto text-center z-10 my-auto">
           <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight leading-[1.2] mb-6">
             หา <span className="text-transparent bg-clip-text bg-linear-to-r from-indigo-400 via-sky-400 to-cyan-300">ฟรีแลนซ์</span> ที่ใช่
             <br />
             สำหรับโปรเจกต์ของคุณ
           </h1>
           <p className="text-slate-300 text-base sm:text-lg max-w-2xl mx-auto mb-10 leading-relaxed font-light">รวบรวมผู้เชี่ยวชาญทั้ง Full Stack, DevOps, AI และ UI/UX ตรวจสอบผลงานและคุยตรงกับฟรีแลนซ์ได้ทันที</p>
-          <div className="max-w-2xl mx-auto">
+          <section className="max-w-2xl mx-auto">
             <div className="bg-white/95 backdrop-blur-md p-2 rounded-2xl shadow-2xl shadow-indigo-950/60 border border-white/20 flex items-center gap-2 focus-within:ring-4 focus-within:ring-indigo-500/20 transition-all">
               <div className="pl-3 text-slate-400">
                 <Search size={20} />
@@ -123,9 +122,9 @@ export default function Main() {
                 ค้นหา
               </button>
             </div>
-          </div>
+          </section>
 
-          <div className="mt-8 flex items-center justify-center gap-2 flex-wrap text-xs sm:text-sm">
+          <section className="mt-8 flex items-center justify-center gap-2 flex-wrap text-xs sm:text-sm">
             <span className="text-slate-400">ทักษะยอดนิยม:</span>
             {POPULAR_SKILLS.map((skill) => (
               <button
@@ -139,8 +138,8 @@ export default function Main() {
                 {skill}
               </button>
             ))}
-          </div>
-        </div>
+          </section>
+        </header>
 
         <button onClick={scrollToContent} className="relative z-10 mt-auto flex flex-col items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors cursor-pointer pt-6">
           <span>เลื่อนดูฟรีแลนซ์</span>
@@ -148,7 +147,7 @@ export default function Main() {
         </button>
       </section>
 
-      <main id="freelancer-list" className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <section id="freelancer-list" aria-label="รายชื่อฟรีแลนซ์" className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="flex flex-col lg:flex-row gap-8 items-start">
           <aside className="hidden lg:block w-72 shrink-0 sticky top-6">
             <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
@@ -179,11 +178,11 @@ export default function Main() {
             </div>
           </aside>
 
-          <section className="flex-1 w-full min-w-0 flex flex-col min-h-[640px]">
+          <div className="flex-1 w-full min-w-0 flex flex-col min-h-[640px]">
             <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 pb-4 mb-6 border-b border-slate-200">
-              <div className="text-sm text-slate-600">
+              <p className="text-sm text-slate-600">
                 พบฟรีแลนซ์ทั้งหมด <span className="font-bold text-slate-900">{filteredFreelancers.length}</span> คน
-              </div>
+              </p>
 
               <div className="flex items-center gap-2.5">
                 <button onClick={() => setIsMobileFilterOpen(true)} className="lg:hidden flex items-center gap-2 bg-white border border-slate-200 px-3.5 py-2 rounded-xl text-xs font-medium text-slate-700 shadow-sm">
@@ -263,9 +262,10 @@ export default function Main() {
                 </div>
               )}
             </div>
-          </section>
+          </div>
         </div>
-      </main>
+      </section>
+      
       <Footer />
 
       {isMobileFilterOpen && (
